@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Developer Portfolio"
+version = "1.0.0"
+id = "artifacts/developer-portfolio"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19815
+
+[services.development]
+run = "pnpm --filter @workspace/developer-portfolio run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/developer-portfolio", "run", "build" ]
+publicDir = "artifacts/developer-portfolio/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19815"
+BASE_PATH = "/"
