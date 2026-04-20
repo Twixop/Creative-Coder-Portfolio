@@ -18,7 +18,7 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 
 ## Artifacts
 
-- **Developer Portfolio** (`artifacts/developer-portfolio`) — single-file HTML/CSS/vanilla JavaScript portfolio website served at `/`. It uses a modern futuristic cyberpunk dark theme with pink/violet neon styling and placeholder content for `developer_name`, `skills_list`, `num_projects`, and `vibe_description`.
+- **Developer Portfolio** (`artifacts/developer-portfolio`) — React/Vite cyberpunk dark portfolio served at `/`. It fetches project cards from the API route `/api/projects`, which reads Airtable server-side using `AIRTABLE_TOKEN`, `AIRTABLE_BASE_ID`, and `AIRTABLE_TABLE_NAME`.
 
 ## Key Commands
 

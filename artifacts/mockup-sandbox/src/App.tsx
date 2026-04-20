@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+patJvLORCtz1ThRzw.27a0032f05c4fecc608ffd1153cd9c6380ad64daa09a8fde63b729a974439f80import { useEffect, useState } from "react";
 import Airtable from 'airtable';
 
 // --- CONFIGURATION À REMPLIR ---
