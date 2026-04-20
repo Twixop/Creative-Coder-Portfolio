@@ -18,7 +18,7 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 
 ## Artifacts
 
-- **Developer Portfolio** (`artifacts/developer-portfolio`) — single-file HTML/CSS/vanilla JavaScript portfolio website served at `/`. It is intentionally beginner-friendly and easy to customize, with placeholder content for `developer_name`, `skills_list`, `num_projects`, and `vibe_description`.
+- **Developer Portfolio** (`artifacts/developer-portfolio`) — single-file HTML/CSS/vanilla JavaScript portfolio website served at `/`. It uses a modern futuristic cyberpunk dark theme with pink/violet neon styling and placeholder content for `developer_name`, `skills_list`, `num_projects`, and `vibe_description`.
 
 ## Key Commands
 

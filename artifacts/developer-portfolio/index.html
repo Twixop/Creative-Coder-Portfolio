@@ -3,21 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Portfolio junior de developer_name, codeur débutant avec une énergie créative et beaucoup d'envie d'apprendre." />
-  <title>developer_name | Portfolio développeur junior</title>
+  <meta name="description" content="Portfolio cyberpunk rose violet de developer_name, développeur junior créatif et curieux." />
+  <title>developer_name | Portfolio cyberpunk</title>
   <style>
-    /* Réglages de base et variables de couleurs faciles à modifier */
+    /* Variables principales: changez ces couleurs pour personnaliser le thème cyberpunk. */
     :root {
-      --cream: #fff7e8;
-      --ink: #24213d;
-      --purple: #6c4df6;
-      --pink: #ff6fb1;
-      --yellow: #ffd166;
-      --mint: #67e8b9;
-      --blue: #76d7ff;
-      --card: #ffffff;
-      --shadow: 0 18px 45px rgba(36, 33, 61, 0.14);
-      --radius: 28px;
+      --bg: #07020f;
+      --bg-2: #120622;
+      --panel: rgba(22, 10, 42, 0.78);
+      --panel-strong: rgba(37, 14, 65, 0.92);
+      --text: #fff4ff;
+      --muted: #c7b7dc;
+      --pink: #ff2bd6;
+      --pink-soft: rgba(255, 43, 214, 0.2);
+      --violet: #8a4dff;
+      --purple: #4c1d95;
+      --cyan: #39f5ff;
+      --line: rgba(255, 43, 214, 0.42);
+      --shadow-pink: 0 0 28px rgba(255, 43, 214, 0.42);
+      --shadow-violet: 0 0 40px rgba(138, 77, 255, 0.34);
+      --radius: 22px;
     }
 
     * {
@@ -31,17 +36,44 @@
     }
 
     body {
-      font-family: Arial, Helvetica, sans-serif;
-      color: var(--ink);
-      background:
-        radial-gradient(circle at top left, rgba(255, 111, 177, 0.24), transparent 34rem),
-        radial-gradient(circle at top right, rgba(103, 232, 185, 0.28), transparent 30rem),
-        var(--cream);
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
       line-height: 1.6;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(255, 43, 214, 0.24), transparent 28rem),
+        radial-gradient(circle at 85% 8%, rgba(138, 77, 255, 0.26), transparent 30rem),
+        radial-gradient(circle at 50% 90%, rgba(57, 245, 255, 0.12), transparent 24rem),
+        linear-gradient(135deg, var(--bg), var(--bg-2) 55%, #05010a);
+      overflow-x: hidden;
     }
 
-    img, svg {
-      max-width: 100%;
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background-image:
+        linear-gradient(rgba(255, 43, 214, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(57, 245, 255, 0.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(to bottom, black, transparent 88%);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.035),
+        rgba(255, 255, 255, 0.035) 1px,
+        transparent 1px,
+        transparent 6px
+      );
+      opacity: 0.28;
     }
 
     a {
@@ -50,235 +82,311 @@
     }
 
     .container {
-      width: min(1120px, calc(100% - 32px));
+      width: min(1140px, calc(100% - 32px));
       margin: 0 auto;
     }
 
-    /* Navigation simple et responsive */
+    /* Navigation sombre avec effet néon. */
     .site-header {
       position: sticky;
       top: 0;
       z-index: 20;
-      backdrop-filter: blur(14px);
-      background: rgba(255, 247, 232, 0.82);
-      border-bottom: 1px solid rgba(36, 33, 61, 0.08);
+      background: rgba(7, 2, 15, 0.72);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.32);
     }
 
     .nav {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 18px 0;
       gap: 20px;
+      padding: 18px 0;
     }
 
     .logo {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      font-weight: 800;
-      letter-spacing: -0.04em;
+      gap: 12px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
     }
 
     .logo-mark {
       display: grid;
       place-items: center;
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      background: var(--ink);
-      color: white;
-      transform: rotate(-6deg);
-      box-shadow: 5px 5px 0 var(--yellow);
+      width: 44px;
+      height: 44px;
+      color: var(--cyan);
+      border: 1px solid var(--cyan);
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(255, 43, 214, 0.2), rgba(57, 245, 255, 0.12));
+      box-shadow: 0 0 20px rgba(57, 245, 255, 0.45), inset 0 0 18px rgba(255, 43, 214, 0.2);
     }
 
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 18px;
-      font-size: 0.95rem;
-      font-weight: 700;
+      gap: 10px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
     }
 
     .nav-links a {
-      padding: 8px 10px;
+      padding: 8px 12px;
+      border: 1px solid transparent;
       border-radius: 999px;
-      transition: background 0.2s ease, transform 0.2s ease;
+      color: var(--muted);
+      transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
     }
 
     .nav-links a:hover {
-      background: rgba(108, 77, 246, 0.1);
+      color: var(--text);
+      border-color: var(--pink);
+      box-shadow: var(--shadow-pink);
       transform: translateY(-2px);
     }
 
-    /* Section héros */
+    section {
+      padding: 76px 0;
+    }
+
+    /* Section héros futuriste. */
     .hero {
-      padding: 86px 0 58px;
+      position: relative;
+      padding: 100px 0 70px;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 8px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--pink), var(--cyan), transparent);
+      box-shadow: var(--shadow-pink);
     }
 
     .hero-grid {
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
+      grid-template-columns: 1.1fr 0.9fr;
       align-items: center;
-      gap: 42px;
+      gap: 46px;
     }
 
     .eyebrow {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 20px;
-      padding: 8px 14px;
-      border: 2px solid var(--ink);
+      gap: 10px;
+      margin-bottom: 22px;
+      padding: 9px 14px;
+      color: var(--cyan);
+      border: 1px solid rgba(57, 245, 255, 0.65);
       border-radius: 999px;
-      background: white;
-      box-shadow: 4px 4px 0 var(--mint);
-      font-weight: 800;
+      background: rgba(57, 245, 255, 0.08);
+      box-shadow: 0 0 24px rgba(57, 245, 255, 0.18);
+      font-size: 0.9rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
     }
 
     .hero h1 {
-      font-size: clamp(2.6rem, 8vw, 6rem);
-      line-height: 0.95;
+      max-width: 860px;
+      font-size: clamp(3rem, 8vw, 6.8rem);
+      line-height: 0.92;
       letter-spacing: -0.08em;
-      max-width: 820px;
+      text-transform: uppercase;
+      text-shadow: 0 0 22px rgba(255, 43, 214, 0.28);
     }
 
     .highlight {
-      color: var(--purple);
-      text-shadow: 5px 5px 0 rgba(255, 209, 102, 0.7);
+      color: var(--pink);
+      text-shadow:
+        0 0 8px rgba(255, 43, 214, 0.9),
+        0 0 28px rgba(138, 77, 255, 0.7),
+        4px 0 0 rgba(57, 245, 255, 0.38);
     }
 
     .hero p {
+      max-width: 660px;
       margin-top: 24px;
-      max-width: 650px;
-      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.24rem);
     }
 
     .mission {
-      margin-top: 20px;
-      padding: 18px;
-      border-left: 6px solid var(--pink);
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.72);
-      font-weight: 700;
+      position: relative;
+      overflow: hidden;
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--pink);
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(255, 43, 214, 0.12), rgba(138, 77, 255, 0.1));
+      box-shadow: var(--shadow-violet);
+      color: var(--text) !important;
+      font-weight: 800;
+    }
+
+    .mission::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+      transform: translateX(-120%);
+      animation: shine 5s ease-in-out infinite;
+    }
+
+    @keyframes shine {
+      0%, 55% { transform: translateX(-120%); }
+      75%, 100% { transform: translateX(120%); }
     }
 
     .hero-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 14px;
-      margin-top: 30px;
+      margin-top: 32px;
     }
 
     .button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 48px;
-      padding: 12px 20px;
-      border: 2px solid var(--ink);
+      min-height: 50px;
+      padding: 13px 22px;
+      border: 1px solid var(--pink);
       border-radius: 999px;
-      background: var(--yellow);
-      box-shadow: 5px 5px 0 var(--ink);
-      font-weight: 800;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      color: white;
+      background: linear-gradient(90deg, var(--pink), var(--violet));
+      box-shadow: var(--shadow-pink);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
     }
 
     .button:hover {
-      transform: translate(3px, 3px);
-      box-shadow: 2px 2px 0 var(--ink);
+      transform: translateY(-4px) scale(1.02);
+      filter: saturate(1.25);
+      box-shadow: 0 0 36px rgba(255, 43, 214, 0.7);
     }
 
     .button.secondary {
-      background: white;
+      color: var(--cyan);
+      background: rgba(57, 245, 255, 0.08);
+      border-color: var(--cyan);
+      box-shadow: 0 0 26px rgba(57, 245, 255, 0.22);
     }
 
     .profile-card {
       position: relative;
-      padding: 26px;
-      border: 3px solid var(--ink);
-      border-radius: var(--radius);
-      background: white;
-      box-shadow: var(--shadow);
-      transform: rotate(2deg);
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      background: linear-gradient(145deg, rgba(25, 9, 48, 0.9), rgba(7, 2, 15, 0.78));
+      box-shadow: var(--shadow-violet), inset 0 0 34px rgba(255, 43, 214, 0.08);
+      isolation: isolate;
     }
 
     .profile-card::before {
       content: "";
       position: absolute;
-      inset: 16px -16px -16px 16px;
+      inset: -1px;
       z-index: -1;
-      border-radius: var(--radius);
-      background: var(--blue);
-      border: 3px solid var(--ink);
+      border-radius: 30px;
+      background: linear-gradient(135deg, var(--pink), transparent 38%, var(--cyan));
+      opacity: 0.55;
+      filter: blur(12px);
     }
 
     .avatar {
       display: grid;
       place-items: center;
-      width: 150px;
-      height: 150px;
+      width: 160px;
+      height: 160px;
       margin: 0 auto 24px;
-      border: 3px solid var(--ink);
-      border-radius: 40% 60% 55% 45%;
-      background: linear-gradient(135deg, var(--pink), var(--yellow));
-      font-size: 4rem;
+      color: var(--text);
+      border: 1px solid var(--pink);
+      border-radius: 36px;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(57, 245, 255, 0.35), transparent 36%),
+        linear-gradient(135deg, rgba(255, 43, 214, 0.78), rgba(76, 29, 149, 0.9));
+      box-shadow: 0 0 34px rgba(255, 43, 214, 0.55), inset 0 0 28px rgba(255, 255, 255, 0.1);
+      font-size: 4.1rem;
       font-weight: 900;
-      animation: bob 4s ease-in-out infinite;
+      animation: float-card 4.4s ease-in-out infinite;
     }
 
-    @keyframes bob {
-      0%, 100% { transform: translateY(0) rotate(-4deg); }
-      50% { transform: translateY(-10px) rotate(4deg); }
+    @keyframes float-card {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-12px) rotate(2deg); }
     }
 
     .profile-card ul {
-      list-style: none;
       display: grid;
       gap: 12px;
-      font-weight: 700;
+      list-style: none;
+      font-weight: 800;
     }
 
     .profile-card li {
-      padding: 12px;
+      padding: 13px 14px;
+      border: 1px solid rgba(255, 43, 214, 0.32);
       border-radius: 16px;
-      background: #f5f0ff;
-    }
-
-    section {
-      padding: 68px 0;
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .section-title {
       margin-bottom: 18px;
-      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-size: clamp(2.1rem, 5vw, 3.7rem);
       line-height: 1;
       letter-spacing: -0.06em;
+      text-transform: uppercase;
+      color: var(--text);
+      text-shadow: 0 0 22px rgba(255, 43, 214, 0.35);
+    }
+
+    .section-title::before {
+      content: "// ";
+      color: var(--cyan);
+      letter-spacing: 0;
     }
 
     .section-intro {
-      max-width: 760px;
+      max-width: 780px;
       margin-bottom: 30px;
+      color: var(--muted);
       font-size: 1.08rem;
     }
 
-    /* Cartes générales */
+    /* Panneaux en verre sombre. */
     .panel {
-      border: 2px solid var(--ink);
+      border: 1px solid rgba(255, 43, 214, 0.38);
       border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.82);
-      box-shadow: var(--shadow);
+      background: var(--panel);
+      box-shadow: var(--shadow-violet);
+      backdrop-filter: blur(16px);
     }
 
     .about-card {
       padding: clamp(24px, 5vw, 46px);
     }
 
+    .about-card p {
+      color: var(--muted);
+    }
+
     .about-card p + p {
       margin-top: 16px;
     }
 
-    /* Badges de compétences */
+    /* Badges de compétences style terminal néon. */
     .skills-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -288,35 +396,33 @@
     .skill-badge {
       display: grid;
       place-items: center;
-      min-height: 132px;
+      min-height: 136px;
       padding: 18px;
-      border: 2px solid var(--ink);
-      border-radius: 24px;
-      background: white;
+      border: 1px solid rgba(57, 245, 255, 0.36);
+      border-radius: 22px;
+      background: linear-gradient(145deg, rgba(255, 43, 214, 0.12), rgba(138, 77, 255, 0.08));
+      color: var(--text);
       text-align: center;
       font-weight: 900;
-      box-shadow: 5px 5px 0 rgba(36, 33, 61, 0.18);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: inset 0 0 28px rgba(57, 245, 255, 0.05);
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .skill-badge:hover {
-      transform: translateY(-7px) rotate(-1deg);
-      box-shadow: 7px 10px 0 rgba(36, 33, 61, 0.18);
+      transform: translateY(-8px);
+      border-color: var(--pink);
+      box-shadow: var(--shadow-pink), inset 0 0 28px rgba(255, 43, 214, 0.12);
     }
 
     .skill-icon {
       display: block;
       margin-bottom: 10px;
-      font-size: 2rem;
+      color: var(--cyan);
+      font-size: 2.1rem;
+      text-shadow: 0 0 14px rgba(57, 245, 255, 0.65);
     }
 
-    .skill-badge:nth-child(1), .project-card:nth-child(1) { background: #fff0f7; }
-    .skill-badge:nth-child(2), .project-card:nth-child(2) { background: #f0fff9; }
-    .skill-badge:nth-child(3), .project-card:nth-child(3) { background: #fff9db; }
-    .skill-badge:nth-child(4) { background: #eff7ff; }
-    .skill-badge:nth-child(5) { background: #f5f0ff; }
-
-    /* Présentation des projets */
+    /* Cartes projets futuristes. */
     .projects-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -324,25 +430,44 @@
     }
 
     .project-card {
+      position: relative;
       display: flex;
       flex-direction: column;
       min-height: 100%;
+      overflow: hidden;
       padding: 24px;
-      border: 2px solid var(--ink);
+      border: 1px solid rgba(255, 43, 214, 0.4);
       border-radius: var(--radius);
-      box-shadow: 6px 6px 0 rgba(36, 33, 61, 0.2);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: linear-gradient(155deg, rgba(37, 14, 65, 0.92), rgba(10, 3, 22, 0.86));
+      box-shadow: var(--shadow-violet);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .project-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--pink), var(--violet), var(--cyan));
     }
 
     .project-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 8px 12px 0 rgba(36, 33, 61, 0.2);
+      transform: translateY(-8px);
+      border-color: var(--cyan);
+      box-shadow: 0 0 34px rgba(57, 245, 255, 0.18), var(--shadow-pink);
     }
 
     .project-card h3 {
       margin-bottom: 10px;
+      color: var(--text);
       font-size: 1.45rem;
       letter-spacing: -0.03em;
+    }
+
+    .project-card p {
+      color: var(--muted);
     }
 
     .tech-stack {
@@ -354,11 +479,14 @@
 
     .tech-stack span {
       padding: 6px 10px;
-      border: 1px solid var(--ink);
+      border: 1px solid rgba(57, 245, 255, 0.4);
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.7);
-      font-size: 0.85rem;
-      font-weight: 800;
+      background: rgba(57, 245, 255, 0.08);
+      color: var(--cyan);
+      font-size: 0.82rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
     .project-links {
@@ -366,19 +494,23 @@
       gap: 12px;
       margin-top: auto;
       padding-top: 12px;
+      color: var(--pink);
       font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
     .project-links a {
-      border-bottom: 3px solid var(--purple);
-      transition: color 0.2s ease;
+      border-bottom: 2px solid currentColor;
+      transition: color 0.2s ease, text-shadow 0.2s ease;
     }
 
     .project-links a:hover {
-      color: var(--purple);
+      color: var(--cyan);
+      text-shadow: 0 0 14px rgba(57, 245, 255, 0.65);
     }
 
-    /* Section contact */
+    /* Section contact. */
     .contact-grid {
       display: grid;
       grid-template-columns: 0.9fr 1.1fr;
@@ -395,16 +527,19 @@
     .contact-list a {
       display: block;
       padding: 14px;
-      border: 2px solid var(--ink);
-      border-radius: 18px;
-      background: white;
-      font-weight: 800;
-      transition: transform 0.2s ease, background 0.2s ease;
+      border: 1px solid rgba(255, 43, 214, 0.36);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted);
+      font-weight: 900;
+      transition: transform 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .contact-list a:hover {
+      color: var(--text);
+      border-color: var(--cyan);
+      box-shadow: 0 0 22px rgba(57, 245, 255, 0.16);
       transform: translateX(6px);
-      background: #fff9db;
     }
 
     form {
@@ -414,18 +549,28 @@
     }
 
     label {
+      color: var(--text);
       font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
     input, textarea {
       width: 100%;
-      margin-top: 6px;
+      margin-top: 7px;
       padding: 14px 16px;
-      border: 2px solid var(--ink);
-      border-radius: 18px;
-      background: white;
-      color: var(--ink);
+      border: 1px solid rgba(57, 245, 255, 0.38);
+      border-radius: 16px;
+      background: rgba(2, 1, 8, 0.74);
+      color: var(--text);
       font: inherit;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--pink);
+      box-shadow: var(--shadow-pink);
     }
 
     textarea {
@@ -435,20 +580,22 @@
 
     .form-note {
       min-height: 24px;
-      font-weight: 800;
-      color: var(--purple);
+      color: var(--cyan);
+      font-weight: 900;
     }
 
     footer {
       padding: 32px 0;
+      color: var(--muted);
       text-align: center;
-      font-weight: 800;
+      font-weight: 900;
+      border-top: 1px solid rgba(255, 43, 214, 0.22);
     }
 
-    /* Petites animations au défilement */
+    /* Animations au défilement. */
     .reveal {
       opacity: 0;
-      transform: translateY(18px);
+      transform: translateY(22px);
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
 
@@ -457,7 +604,6 @@
       transform: translateY(0);
     }
 
-    /* Responsive tablette */
     @media (max-width: 900px) {
       .hero-grid,
       .contact-grid {
@@ -478,7 +624,6 @@
       }
     }
 
-    /* Responsive téléphone */
     @media (max-width: 640px) {
       .nav {
         align-items: flex-start;
@@ -492,7 +637,7 @@
       }
 
       .hero {
-        padding-top: 52px;
+        padding-top: 58px;
       }
 
       .hero-actions {
@@ -509,7 +654,7 @@
       }
 
       .skill-badge {
-        min-height: 100px;
+        min-height: 106px;
       }
     }
   </style>
@@ -532,23 +677,24 @@
   </header>
 
   <main id="top">
-    <!-- Section héros: changez le nom et le slogan ici -->
+    <!-- Section héros: remplacez developer_name et vibe_description par vos vraies informations. -->
     <section class="hero">
       <div class="container hero-grid">
         <div class="reveal">
-          <span class="eyebrow">Actuellement en apprentissage, souvent en expérimentation</span>
+          <span class="eyebrow">Junior dev // creative mode online</span>
           <h1>Salut, moi c’est <span class="highlight">developer_name</span>.</h1>
           <p>
-            Je suis un développeur junior qui transforme les erreurs, les idées bizarres
-            et les petites victoires en projets web créatifs.
+            Je suis un développeur junior qui apprend en construisant des interfaces sombres,
+            expressives et pleines d’énergie numérique. Je ne prétends pas tout savoir: je teste,
+            je casse, je corrige, et je progresse.
           </p>
           <p class="mission">
-            Mission personnelle: construire avec curiosité, partager le chemin, et garder une énergie
-            qui ressemble à <strong>vibe_description</strong>.
+            Mission personnelle: transformer la curiosité en projets web accessibles, avec une vibe
+            <strong>vibe_description</strong>, rose néon, violet profond et futur proche.
           </p>
           <div class="hero-actions">
-            <a class="button" href="#projects">Voir mes projets</a>
-            <a class="button secondary" href="#contact">Dire bonjour</a>
+            <a class="button" href="#projects">Scanner les projets</a>
+            <a class="button secondary" href="#contact">Ouvrir le canal</a>
           </div>
         </div>
 
@@ -556,8 +702,8 @@
           <div class="avatar" aria-hidden="true">&lt;/&gt;</div>
           <ul>
             <li>Curieux avant d’être expert</li>
-            <li>Fan de petites interfaces utiles</li>
-            <li>En train d’apprendre, une ligne à la fois</li>
+            <li>Interfaces dark, propres et accessibles</li>
+            <li>Apprentissage en cours, progrès assumé</li>
           </ul>
         </aside>
       </div>
@@ -569,49 +715,48 @@
         <h2 class="section-title reveal">À propos</h2>
         <div class="about-card panel reveal">
           <p>
-            Je m’appelle developer_name et je suis au début de mon aventure dans le développement web.
-            J’apprends surtout en construisant: parfois ça marche du premier coup, souvent ça demande
-            quelques recherches, et c’est exactement ce qui rend le parcours intéressant.
+            Je m’appelle developer_name et je suis au début de mon parcours dans le développement web.
+            J’apprends surtout en fabriquant des choses concrètes: petites pages, interfaces, composants,
+            bugs étranges et solutions trouvées après quelques essais.
           </p>
           <p>
-            Mon objectif n’est pas d’avoir l’air parfait, mais de progresser avec honnêteté et régularité.
-            J’aime créer des pages accessibles, propres et un peu joyeuses, parce que le web peut être utile
-            sans devenir ennuyeux.
+            Mon objectif n’est pas d’avoir l’air parfait, mais de devenir meilleur à chaque projet.
+            J’aime mélanger structure, créativité et accessibilité pour créer des expériences qui ont
+            une vraie personnalité, même quand le code reste simple et facile à comprendre.
           </p>
         </div>
       </div>
     </section>
 
-    <!-- Section compétences: remplacez ces badges par skills_list si besoin -->
+    <!-- Section compétences: remplacez ces badges par skills_list si besoin. -->
     <section id="skills">
       <div class="container">
         <h2 class="section-title reveal">Compétences</h2>
         <p class="section-intro reveal">
-          Voici une version de départ de <strong>skills_list</strong>. Remplacez les textes par vos vraies compétences.
+          Version de départ de <strong>skills_list</strong>. Remplacez ces badges par vos vraies compétences.
         </p>
         <div class="skills-grid">
           <div class="skill-badge reveal"><span class="skill-icon">HTML</span>Structure claire</div>
-          <div class="skill-badge reveal"><span class="skill-icon">CSS</span>Styles responsive</div>
+          <div class="skill-badge reveal"><span class="skill-icon">CSS</span>Styles néon responsive</div>
           <div class="skill-badge reveal"><span class="skill-icon">JS</span>Interactions simples</div>
           <div class="skill-badge reveal"><span class="skill-icon">Git</span>Suivi du code</div>
-          <div class="skill-badge reveal"><span class="skill-icon">UI</span>Idées visuelles</div>
+          <div class="skill-badge reveal"><span class="skill-icon">UI</span>Ambiance visuelle</div>
         </div>
       </div>
     </section>
 
-    <!-- Section projets: ajustez le nombre de cartes selon num_projects -->
+    <!-- Section projets: dupliquez ou supprimez une carte selon num_projects. -->
     <section id="projects">
       <div class="container">
         <h2 class="section-title reveal">Projets</h2>
         <p class="section-intro reveal">
-          Trois cartes de projet sont incluses comme exemple. Dupliquez ou supprimez une carte pour correspondre à <strong>num_projects</strong>.
+          Trois cartes de projet sont incluses comme exemple. Ajustez-les pour correspondre à <strong>num_projects</strong>.
         </p>
         <div class="projects-grid">
           <article class="project-card reveal">
-            <h3>Mini météo joyeuse</h3>
+            <h3>Neon Weather Panel</h3>
             <p>
-              Une petite interface qui affiche la météo d’une ville avec un message humain,
-              pas juste une suite de chiffres.
+              Une mini interface météo avec un ton humain et une présentation inspirée d’un tableau de bord futuriste.
             </p>
             <div class="tech-stack" aria-label="Technologies utilisées">
               <span>HTML</span><span>CSS</span><span>JavaScript</span>
@@ -623,10 +768,9 @@
           </article>
 
           <article class="project-card reveal">
-            <h3>Liste d’idées créatives</h3>
+            <h3>Idea Terminal</h3>
             <p>
-              Un outil simple pour noter, trier et garder les idées de projets avant qu’elles
-              ne disparaissent dans un onglet oublié.
+              Un espace simple pour capturer, organiser et garder les idées de projets avant qu’elles disparaissent.
             </p>
             <div class="tech-stack" aria-label="Technologies utilisées">
               <span>HTML</span><span>CSS Grid</span><span>JS</span>
@@ -638,10 +782,9 @@
           </article>
 
           <article class="project-card reveal">
-            <h3>Page portfolio v1</h3>
+            <h3>Portfolio Cyberdeck</h3>
             <p>
-              La première version d’un espace personnel pour montrer l’apprentissage, les essais,
-              les progrès et les prochaines étapes.
+              Une première base de portfolio personnel pour montrer le parcours, les essais et les prochaines étapes.
             </p>
             <div class="tech-stack" aria-label="Technologies utilisées">
               <span>HTML</span><span>CSS</span><span>Accessibilité</span>
@@ -660,13 +803,13 @@
       <div class="container">
         <h2 class="section-title reveal">Contact</h2>
         <p class="section-intro reveal">
-          Envie de discuter d’un projet, d’un apprentissage ou d’un bug mystérieux? Je suis partant.
+          Un message, une idée, une collaboration ou un bug étrange à partager? Le canal est ouvert.
         </p>
         <div class="contact-grid">
           <div class="contact-list panel reveal">
             <a href="mailto:developer.name@example.com">Email: developer.name@example.com</a>
             <a href="https://github.com/developer-name" target="_blank" rel="noopener">GitHub: github.com/developer-name</a>
-            <a href="#projects">CTA: découvrir mon travail</a>
+            <a href="#projects">CTA: explorer mon travail</a>
           </div>
 
           <form class="panel reveal" id="contactForm">
@@ -680,9 +823,9 @@
             </label>
             <label>
               Message
-              <textarea name="message" placeholder="Bonjour developer_name, j’ai vu ton portfolio..." required></textarea>
+              <textarea name="message" placeholder="Bonjour developer_name, ton portfolio cyberpunk..." required></textarea>
             </label>
-            <button class="button" type="submit">Envoyer le message</button>
+            <button class="button" type="submit">Envoyer le signal</button>
             <p class="form-note" id="formNote" role="status" aria-live="polite"></p>
           </form>
         </div>
@@ -692,7 +835,7 @@
 
   <footer>
     <div class="container">
-      Créé avec HTML, CSS, JavaScript et beaucoup de curiosité.
+      Créé avec HTML, CSS, JavaScript et une énergie rose/violet dark.
     </div>
   </footer>
 
@@ -717,7 +860,7 @@
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       form.reset();
-      formNote.textContent = 'Merci! Le formulaire est prêt à être connecté à un vrai service d’envoi.';
+      formNote.textContent = 'Signal reçu. Le formulaire est prêt à être connecté à un vrai service d’envoi.';
     });
   </script>
 </body>
