@@ -58,7 +58,7 @@ function mapRecord(record: AirtableRecord): PortfolioProject {
     name: readText(fields, ["Nom", "Name", "Titre", "Title", "Projet", "Project"], "Projet sans titre"),
     description: readText(
       fields,
-      ["Description", "Desc", "Résumé", "Resume", "Summary"],
+      ["Ma Solution", "Solution", "Description", "Desc", "Résumé", "Resume", "Summary", "Détails", "Détail", "Detail"],
       "Description à compléter dans Airtable.",
     ),
     stack: readStack(fields),
