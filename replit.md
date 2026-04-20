@@ -18,7 +18,7 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 
 ## Artifacts
 
-- **Developer Portfolio** (`artifacts/developer-portfolio`) — React/Vite cyberpunk dark portfolio served at `/`. It fetches project cards from the API route `/api/projects`, which reads Airtable server-side using `AIRTABLE_TOKEN`, `AIRTABLE_BASE_ID`, and `AIRTABLE_TABLE_NAME`.
+- **Developer Portfolio** (`artifacts/developer-portfolio`) — React/Vite cyberpunk dark portfolio served at `/`. It fetches project cards from the API route `/api/projects`, which reads Airtable server-side using `AIRTABLE_TOKEN`, `AIRTABLE_BASE_ID`, and `AIRTABLE_TABLE_NAME`. Its contact form posts to `/api/contact`, which writes messages to Airtable using the same private token and common contact table/field names.
 
 ## Key Commands
 

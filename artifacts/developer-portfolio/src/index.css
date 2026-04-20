@@ -254,6 +254,13 @@ section {
   box-shadow: 0 0 36px rgba(255, 43, 214, 0.7);
 }
 
+.button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+  transform: none;
+  filter: grayscale(0.2);
+}
+
 .button.secondary {
   color: var(--cyan);
   background: rgba(57, 245, 255, 0.08);

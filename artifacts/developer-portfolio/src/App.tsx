@@ -42,10 +42,12 @@ const fallbackProjects: Project[] = [
 function App() {
   const [projects, setProjects] = useState<Project[]>(fallbackProjects);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSendingContact, setIsSendingContact] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [formNote, setFormNote] = useState("");
 
   const projectsEndpoint = useMemo(() => `${import.meta.env.BASE_URL}api/projects`, []);
+  const contactEndpoint = useMemo(() => `${import.meta.env.BASE_URL}api/contact`, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -86,10 +88,43 @@ function App() {
     };
   }, [projectsEndpoint]);
 
-  function handleContactSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleContactSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    event.currentTarget.reset();
-    setFormNote("Signal reçu. Le formulaire est prêt à être connecté à un vrai service d’envoi.");
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    setIsSendingContact(true);
+    setFormNote("Transmission du message vers Airtable...");
+
+    try {
+      const response = await fetch(contactEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.get("name"),
+          email: formData.get("email"),
+          message: formData.get("message"),
+        }),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(data?.error || "Impossible d’envoyer le message pour le moment.");
+      }
+
+      form.reset();
+      setFormNote("Signal reçu dans Airtable. Merci pour ton message.");
+    } catch (error) {
+      setFormNote(
+        error instanceof Error
+          ? error.message
+          : "Impossible d’envoyer le message pour le moment.",
+      );
+    } finally {
+      setIsSendingContact(false);
+    }
   }
 
   return (
@@ -224,7 +259,7 @@ function App() {
                 <a href="#projects">CTA: explorer mon travail</a>
               </div>
 
-              <form className="panel reveal" onSubmit={handleContactSubmit}>
+              <form className="panel reveal" onSubmit={handleContactSubmit} aria-busy={isSendingContact}>
                 <label>
                   Votre nom
                   <input type="text" name="name" placeholder="Ada Lovelace" required />
@@ -237,7 +272,9 @@ function App() {
                   Message
                   <textarea name="message" placeholder="Bonjour Twixop, ton portfolio cyberpunk..." required />
                 </label>
-                <button className="button" type="submit">Envoyer le signal</button>
+                <button className="button" type="submit" disabled={isSendingContact}>
+                  {isSendingContact ? "Transmission..." : "Envoyer le signal"}
+                </button>
                 <p className="form-note" role="status" aria-live="polite">{formNote}</p>
               </form>
             </div>
