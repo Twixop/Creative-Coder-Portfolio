@@ -143,7 +143,6 @@ function App() {
           </nav>
         </div>
       </header>
-
       <main id="top">
         <section className="hero">
           <div className="container hero-grid">
@@ -252,7 +251,7 @@ function App() {
             </p>
             <div className="contact-grid">
               <div className="contact-list panel reveal">
-                <a href="mailto:twixop@example.com">Email: twixop@example.com</a>
+                <a href="mailto:twixop@example.com">Email: twix@ehotmail.com</a>
                 <a href="https://github.com/twixop" target="_blank" rel="noopener noreferrer">
                   GitHub: github.com/twixop
                 </a>
@@ -281,7 +280,6 @@ function App() {
           </div>
         </section>
       </main>
-
       <footer>
         <div className="container">Créé avec React, Airtable et une énergie rose/violet dark.</div>
       </footer>
