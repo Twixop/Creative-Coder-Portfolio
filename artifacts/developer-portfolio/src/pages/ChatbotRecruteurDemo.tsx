@@ -16,6 +16,8 @@ function ChatbotRecruteurDemo() {
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [recordId, setRecordId] = useState<string | null>(null);
+  const [savedNotice, setSavedNotice] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,11 +41,11 @@ function ChatbotRecruteurDemo() {
       const response = await fetch(`${import.meta.env.BASE_URL}api/chatbot-recruteur`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: nextMessages }),
+        body: JSON.stringify({ messages: nextMessages, recordId }),
       });
 
       const data = (await response.json().catch(() => null)) as
-        | { reply?: string; error?: string }
+        | { reply?: string; error?: string; recordId?: string | null; saved?: boolean }
         | null;
 
       if (!response.ok || !data?.reply) {
@@ -51,6 +53,14 @@ function ChatbotRecruteurDemo() {
       }
 
       setMessages((current) => [...current, { role: "assistant", content: data.reply as string }]);
+      if (data.recordId) {
+        setRecordId(data.recordId);
+      }
+      setSavedNotice(
+        data.saved
+          ? "Conversation sauvegardée dans Airtable."
+          : "Conversation non sauvegardée — vérifie qu'une table 'Chatbot' existe dans Airtable.",
+      );
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "Impossible de contacter le chatbot recruteur.",
@@ -64,6 +74,8 @@ function ChatbotRecruteurDemo() {
     setMessages([introMessage]);
     setInput("");
     setErrorMessage("");
+    setRecordId(null);
+    setSavedNotice("");
   }
 
   return (
@@ -102,6 +114,7 @@ function ChatbotRecruteurDemo() {
           </div>
 
           {errorMessage && <p className="chat-error">{errorMessage}</p>}
+          {!errorMessage && savedNotice && <p className="chat-saved">{savedNotice}</p>}
 
           <form className="chat-form" onSubmit={handleSubmit} aria-busy={isSending}>
             <label className="sr-only" htmlFor="chat-input">
@@ -134,6 +147,12 @@ function ChatbotRecruteurDemo() {
             <li>Répond aux questions fréquentes sur le poste, l'équipe et le process.</li>
             <li>Termine par un score de compatibilité et une recommandation pour les RH.</li>
           </ul>
+          <h2>Où retrouver les conversations</h2>
+          <p>
+            Chaque échange est enregistré dans la table <strong>Chatbot</strong> de ta base Airtable.
+            Crée-y les colonnes <strong>Candidat</strong>, <strong>Conversation</strong>,{" "}
+            <strong>Date</strong> et <strong>Score</strong> pour voir tout le détail.
+          </p>
           <h2>Astuce</h2>
           <p>
             Présente-toi comme un vrai candidat (prénom, expérience, techno préférée). Plus tu donnes

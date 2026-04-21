@@ -739,6 +739,14 @@ textarea {
   font-weight: 800;
 }
 
+.chat-saved {
+  color: var(--cyan);
+  font-weight: 800;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 .demo-side {
   grid-area: side;
   padding: 22px;
