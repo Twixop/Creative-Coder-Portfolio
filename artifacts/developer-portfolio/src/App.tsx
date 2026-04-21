@@ -251,7 +251,7 @@ function App() {
             </p>
             <div className="contact-grid">
               <div className="contact-list panel reveal">
-                <a href="mailto:twixop@example.com">Email: twix@ehotmail.com</a>
+                <a href="mailto:twixop@example.com">Email: twix2110@ehotmail.com</a>
                 <a href="https://github.com/twixop" target="_blank" rel="noopener noreferrer">
                   GitHub: github.com/twixop
                 </a>
