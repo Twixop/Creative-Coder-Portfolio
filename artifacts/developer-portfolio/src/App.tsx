@@ -224,21 +224,36 @@ function App() {
                   {errorMessage} Les projets d’exemple restent affichés en attendant la configuration.
                 </div>
               )}
-              {projects.map((project) => (
-                <article className="project-card reveal" key={project.id}>
-                  <h3>{project.name}</h3>
-                  <p>{project.description}</p>
-                  <div className="tech-stack" aria-label="Technologies utilisées">
-                    {project.stack.map((tech) => (
-                      <span key={`${project.id}-${tech}`}>{tech}</span>
-                    ))}
-                  </div>
-                  <div className="project-links">
-                    <a href={project.demoUrl} target="_blank" rel="noopener noreferrer">Démo</a>
-                    <a href={project.codeUrl} target="_blank" rel="noopener noreferrer">Code</a>
-                  </div>
-                </article>
-              ))}
+              {projects.map((project) => {
+                const isChatbotRecruteur = project.name.toLowerCase().includes("chatbot recruteur");
+                const demoUrl = isChatbotRecruteur
+                  ? `${import.meta.env.BASE_URL}demos/chatbot-recruteur`
+                  : project.demoUrl;
+                const demoIsInternal = isChatbotRecruteur;
+                return (
+                  <article className="project-card reveal" key={project.id}>
+                    <h3>{project.name}</h3>
+                    <p>{project.description}</p>
+                    <div className="tech-stack" aria-label="Technologies utilisées">
+                      {project.stack.map((tech) => (
+                        <span key={`${project.id}-${tech}`}>{tech}</span>
+                      ))}
+                    </div>
+                    <div className="project-links">
+                      <a
+                        href={demoUrl}
+                        target={demoIsInternal ? "_self" : "_blank"}
+                        rel={demoIsInternal ? undefined : "noopener noreferrer"}
+                      >
+                        Démo
+                      </a>
+                      <a href={project.codeUrl} target="_blank" rel="noopener noreferrer">
+                        Code
+                      </a>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </div>
         </section>
