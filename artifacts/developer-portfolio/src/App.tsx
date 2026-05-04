@@ -267,8 +267,8 @@ function App() {
             <div className="contact-grid">
               <div className="contact-list panel reveal">
                 <a href="mailto:twix2110@hotmail.com">Email: twix2110@hotmail.com</a>
-                <a href="https://github.com/twixop" target="_blank" rel="noopener noreferrer">
-                  GitHub: github.com/twixop
+                <a href="https://github.com/Twixop" target="_blank" rel="noopener noreferrer">
+                  GitHub: github.com/Twixop
                 </a>
                 <a href="#projects">CTA: explorer mon travail</a>
               </div>

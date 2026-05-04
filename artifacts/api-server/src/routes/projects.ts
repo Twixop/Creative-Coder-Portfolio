@@ -63,7 +63,7 @@ function mapRecord(record: AirtableRecord): PortfolioProject {
     ),
     stack: readStack(fields),
     demoUrl: readText(fields, ["Demo", "Démo", "DemoUrl", "Demo URL", "Lien", "URL"], "https://example.com"),
-    codeUrl: readText(fields, ["Code", "GitHub", "Github", "Repo", "Repository"], "https://github.com/twixop"),
+    codeUrl: readText(fields, ["Code", "GitHub", "Github", "Repo", "Repository"], "https://github.com/Twixop/Creative-Coder-Portfolio"),
   };
 }
 
