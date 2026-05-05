@@ -1,28 +1,22 @@
 import { useEffect, useState } from "react";
 import Airtable from 'airtable';
 
-// --- REMPLACE ICI ---
-const TOKEN = 'patJvLORCtz1ThRzw.27a0032f05c4fecc608ffd1153cd9c6380ad64daa09a8fde63b729a974439f80'; // Ton token secret
-const BASE_ID = 'appe7LRwYtNkRQwuU/tblUsFRcUsizHsIhS'; // Ton ID de base
-const TABLE_NAME = 'Projet'; // Le nom exact de l'onglet
-// --------------------
+const TOKEN = import.meta.env.VITE_AIRTABLE_TOKEN || '';
+const BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID || '';
+const TABLE_NAME = 'Projet';
 
-const base = new Airtable({apiKey: TOKEN}).base(BASE_ID);
+const base = new Airtable({ apiKey: TOKEN }).base(BASE_ID);
 
 export default function App() {
   const [projets, setProjets] = useState<any[]>([]);
   const [erreur, setErreur] = useState("");
 
   useEffect(() => {
-    console.log("Tentative de connexion à Airtable...");
-
     base(TABLE_NAME).select({ view: 'Grid view' }).all()
       .then(records => {
-        console.log("Données reçues :", records);
-        setProjets(records);
+        setProjets(records as any[]);
       })
       .catch(err => {
-        console.error("Erreur détaillée :", err);
         setErreur(err.message);
       });
   }, []);
@@ -30,13 +24,10 @@ export default function App() {
   return (
     <div style={{ padding: "20px", color: "white", background: "#1a1a1a", minHeight: "100vh" }}>
       <h1>Test Airtable</h1>
-
       {erreur && <p style={{ color: "red" }}>Erreur : {erreur}</p>}
-
-      {projets.length === 0 && !erreur && <p>Chargement en cours... (Regarde la console si ça dure)</p>}
-
+      {projets.length === 0 && !erreur && <p>Chargement en cours...</p>}
       <ul>
-        {projets.map((p) => (
+        {projets.map((p: any) => (
           <li key={p.id} style={{ marginBottom: "10px", background: "#333", padding: "10px" }}>
             <pre>{JSON.stringify(p.fields, null, 2)}</pre>
           </li>
