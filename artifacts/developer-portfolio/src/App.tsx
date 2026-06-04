@@ -226,10 +226,13 @@ function App() {
               )}
               {projects.map((project) => {
                 const isChatbotRecruteur = project.name.toLowerCase().includes("chatbot recruteur");
+                const isNeonWeather = project.name.toLowerCase().includes("neon weather") || project.name.toLowerCase().includes("weather panel");
                 const demoUrl = isChatbotRecruteur
                   ? `${import.meta.env.BASE_URL}demos/chatbot-recruteur`
+                  : isNeonWeather
+                  ? `${import.meta.env.BASE_URL}demos/neon-weather`
                   : project.demoUrl;
-                const demoIsInternal = isChatbotRecruteur;
+                const demoIsInternal = isChatbotRecruteur || isNeonWeather;
                 return (
                   <article className="project-card reveal" key={project.id}>
                     <h3>{project.name}</h3>
