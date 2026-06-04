@@ -97,7 +97,7 @@ async function saveTranscript(params: {
   recordId: string | null;
   messages: ChatMessage[];
 }) {
-  const token = process.env.AIRTABLE_TOKEN;
+  const token = process.env.AIRTABLE_TOKEN_V2 || process.env.AIRTABLE_TOKEN;
   const baseId = process.env.AIRTABLE_BASE_ID || defaultBaseId;
   if (!token) {
     params.log.warn("Airtable token missing, skipping chatbot transcript save");

@@ -68,11 +68,9 @@ function mapRecord(record: AirtableRecord): PortfolioProject {
 }
 
 router.get("/projects", async (req, res) => {
-  const token = process.env.AIRTABLE_TOKEN;
+  const token = process.env.AIRTABLE_TOKEN_V2 || process.env.AIRTABLE_TOKEN;
   const baseId = process.env.AIRTABLE_BASE_ID || defaultBaseId;
   const tableName = process.env.AIRTABLE_TABLE_NAME || defaultTableName;
-
-  req.log.info({ tokenPrefix: token ? token.slice(0, 14) : "ABSENT" }, "Airtable token check");
 
   if (!token) {
     req.log.warn("Airtable token is missing");

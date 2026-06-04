@@ -110,7 +110,7 @@ async function createAirtableContact(token: string, baseId: string, contact: Con
 }
 
 router.post("/contact", async (req, res) => {
-  const token = process.env.AIRTABLE_TOKEN;
+  const token = process.env.AIRTABLE_TOKEN_V2 || process.env.AIRTABLE_TOKEN;
   const baseId = process.env.AIRTABLE_BASE_ID || defaultBaseId;
   const contact = validateContact(req.body as ContactPayload);
 
