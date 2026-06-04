@@ -1,149 +1,171 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 type WeatherData = {
-  city: string;
-  country: string;
-  temp: number;
-  feelsLike: number;
-  humidity: number;
-  pressure: number;
-  windSpeed: number;
-  windDeg: number;
-  description: string;
-  icon: string;
-  main: string;
-  visibility: number;
+  city: string; country: string; temp: number; feelsLike: number;
+  humidity: number; pressure: number; windSpeed: number; windDeg: number;
+  description: string; icon: string; main: string; visibility: number;
 };
 
-function windDirection(deg: number) {
-  const dirs = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"];
-  return dirs[Math.round(deg / 45) % 8];
+type ForecastDay = {
+  day: string; tempMin: number; tempMax: number;
+  icon: string; description: string; main: string;
+};
+
+const DAY_FR = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+
+function windDir(deg: number) {
+  return ["N","NE","E","SE","S","SO","O","NO"][Math.round(deg / 45) % 8];
 }
 
-async function fetchWeather(params: { lat?: number; lon?: number; q?: string }): Promise<WeatherData> {
-  const query = params.q
-    ? `q=${encodeURIComponent(params.q)}`
-    : `lat=${params.lat}&lon=${params.lon}`;
-  const r = await fetch(`${import.meta.env.BASE_URL}api/weather?${query}`);
-  const data = await r.json();
-  if (data.error) throw new Error(data.error);
-  return data as WeatherData;
+function dayLabel(dateStr: string) {
+  const d = new Date(dateStr + "T12:00:00");
+  return DAY_FR[d.getDay()];
+}
+
+function iconAnimClass(main: string): string {
+  switch (main) {
+    case "Clear": return "anim-sun";
+    case "Clouds": return "anim-cloud";
+    case "Rain": case "Drizzle": return "anim-rain";
+    case "Thunderstorm": return "anim-thunder";
+    case "Snow": return "anim-snow";
+    default: return "anim-pulse";
+  }
+}
+
+const BASE = import.meta.env.BASE_URL as string;
+
+async function apiFetch(endpoint: string, qs: string): Promise<unknown> {
+  const r = await fetch(`${BASE}api/${endpoint}?${qs}`);
+  const d = await r.json();
+  if ((d as { error?: string }).error) throw new Error((d as { error: string }).error);
+  return d;
+}
+
+function buildQs(params: { lat?: number; lon?: number; q?: string }): string {
+  if (params.q) return `q=${encodeURIComponent(params.q)}`;
+  return `lat=${params.lat}&lon=${params.lon}`;
 }
 
 export default function NeonWeatherDemo() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [forecast, setForecast] = useState<ForecastDay[]>([]);
   const [cityInput, setCityInput] = useState("");
-  const [showCitySearch, setShowCitySearch] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setShowCitySearch(true);
-      setLoading(false);
-      return;
-    }
-
-    const timeout = setTimeout(() => {
-      setShowCitySearch(true);
-      setLoading(false);
-    }, 6000);
-
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        clearTimeout(timeout);
-        try {
-          const data = await fetchWeather({ lat: pos.coords.latitude, lon: pos.coords.longitude });
-          setWeather(data);
-        } catch (err) {
-          setShowCitySearch(true);
-          setError(err instanceof Error ? err.message : "Erreur météo.");
-        } finally {
-          setLoading(false);
-        }
-      },
-      () => {
-        clearTimeout(timeout);
-        setShowCitySearch(true);
-        setLoading(false);
-      },
-      { timeout: 5000, maximumAge: 60000 },
-    );
-  }, []);
-
-  useEffect(() => {
-    if (showCitySearch) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [showCitySearch]);
-
-  async function handleCitySearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!cityInput.trim()) return;
+  async function load(params: { lat?: number; lon?: number; q?: string }) {
     setLoading(true);
     setError("");
     try {
-      const data = await fetchWeather({ q: cityInput.trim() });
-      setWeather(data);
-      setShowCitySearch(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Ville introuvable.");
+      const qs = buildQs(params);
+      const [w, f] = await Promise.all([
+        apiFetch("weather", qs),
+        apiFetch("weather/forecast", qs),
+      ]);
+      setWeather(w as WeatherData);
+      setForecast(((f as { forecast: ForecastDay[] }).forecast) || []);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erreur météo.");
+      setWeather(null);
+      setForecast([]);
     } finally {
       setLoading(false);
+      setGeoLoading(false);
     }
   }
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = cityInput.trim();
+    if (!q) return;
+    load({ q });
+  }
+
+  function handleGeo() {
+    if (!navigator.geolocation) {
+      setError("Géolocalisation non supportée par ce navigateur.");
+      return;
+    }
+    setGeoLoading(true);
+    setError("");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => load({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+      (err) => {
+        setGeoLoading(false);
+        setError(
+          err.code === 1
+            ? "Permission de géolocalisation refusée — entre ta ville manuellement."
+            : "Impossible de récupérer ta position.",
+        );
+      },
+      { timeout: 8000, maximumAge: 60000 },
+    );
+  }
+
+  const animClass = weather ? iconAnimClass(weather.main) : "";
 
   return (
     <main className="demo-shell weather-shell">
       <div className="container">
         <nav className="demo-nav">
-          <a href={import.meta.env.BASE_URL || "/"} className="back-link">
-            ← Retour au portfolio
-          </a>
+          <a href={BASE || "/"} className="back-link">← Retour au portfolio</a>
           <span className="demo-badge">Démo live // Neon Weather Panel</span>
         </nav>
 
         <h1 className="weather-title">
-          <span className="neon-pink">NEON</span> <span className="neon-cyan">WEATHER</span>{" "}
+          <span className="neon-pink">NEON</span>{" "}
+          <span className="neon-cyan">WEATHER</span>{" "}
           <span className="neon-violet">PANEL</span>
         </h1>
 
-        {loading && (
+        <div className="weather-search-bar">
+          <form className="weather-city-form" onSubmit={handleSearch}>
+            <input
+              ref={inputRef}
+              className="weather-city-input"
+              type="text"
+              placeholder="Paris, Tokyo, New York…"
+              value={cityInput}
+              onChange={(e) => setCityInput(e.target.value)}
+              autoComplete="off"
+              disabled={loading || geoLoading}
+            />
+            <button className="btn weather-city-btn" type="submit" disabled={loading || geoLoading}>
+              {loading && !geoLoading ? "…" : "Rechercher"}
+            </button>
+          </form>
+          <button
+            className={`btn-geo${geoLoading ? " btn-geo--loading" : ""}`}
+            onClick={handleGeo}
+            disabled={loading || geoLoading}
+            title="Utiliser ma position GPS"
+            aria-label="Utiliser ma position GPS"
+          >
+            {geoLoading ? (
+              <span className="geo-spinner" />
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+                <circle cx="12" cy="12" r="3" />
+                <line x1="12" y1="2" x2="12" y2="6" />
+                <line x1="12" y1="18" x2="12" y2="22" />
+                <line x1="2" y1="12" x2="6" y2="12" />
+                <line x1="18" y1="12" x2="22" y2="12" />
+              </svg>
+            )}
+          </button>
+        </div>
+
+        {error && (
+          <p className="weather-error-msg">{error}</p>
+        )}
+
+        {loading && !geoLoading && (
           <div className="weather-loading">
             <div className="weather-pulse"></div>
-            <p>Localisation en cours…</p>
-          </div>
-        )}
-
-        {!loading && showCitySearch && (
-          <div className="weather-city-search">
-            <p className="weather-city-hint">
-              {error || "Géolocalisation non disponible — entre ta ville manuellement."}
-            </p>
-            <form className="weather-city-form" onSubmit={handleCitySearch}>
-              <input
-                ref={inputRef}
-                className="weather-city-input"
-                type="text"
-                placeholder="Paris, Tokyo, New York…"
-                value={cityInput}
-                onChange={(e) => setCityInput(e.target.value)}
-                autoComplete="off"
-              />
-              <button className="btn weather-city-btn" type="submit">
-                Rechercher
-              </button>
-            </form>
-          </div>
-        )}
-
-        {!loading && !showCitySearch && error && (
-          <div className="weather-error panel">
-            <p>{error}</p>
-            <button className="btn" onClick={() => { setShowCitySearch(true); setError(""); }}>
-              Rechercher une ville
-            </button>
+            <p>Récupération des données…</p>
           </div>
         )}
 
@@ -155,7 +177,7 @@ export default function NeonWeatherDemo() {
                   <span className="neon-cyan">{weather.city}</span>
                   {weather.country && <span className="weather-country">, {weather.country}</span>}
                 </div>
-                <div className="weather-icon-wrap">
+                <div className={`weather-icon-wrap ${animClass}`}>
                   <img
                     src={`https://openweathermap.org/img/wn/${weather.icon}@2x.png`}
                     alt={weather.description}
@@ -177,19 +199,14 @@ export default function NeonWeatherDemo() {
                     <div className="stat-fill" style={{ width: `${weather.humidity}%` }}></div>
                   </div>
                 </div>
-
                 <div className="weather-stat panel reveal">
                   <span className="stat-label neon-violet">Vent</span>
-                  <span className="stat-value">
-                    {weather.windSpeed} km/h {windDirection(weather.windDeg)}
-                  </span>
+                  <span className="stat-value">{weather.windSpeed} km/h {windDir(weather.windDeg)}</span>
                 </div>
-
                 <div className="weather-stat panel reveal">
                   <span className="stat-label neon-violet">Pression</span>
                   <span className="stat-value">{weather.pressure} hPa</span>
                 </div>
-
                 <div className="weather-stat panel reveal">
                   <span className="stat-label neon-violet">Visibilité</span>
                   <span className="stat-value">{weather.visibility} km</span>
@@ -197,14 +214,28 @@ export default function NeonWeatherDemo() {
               </div>
             </div>
 
-            <div className="weather-change-city">
-              <button
-                className="btn-ghost"
-                onClick={() => { setShowCitySearch(true); setWeather(null); }}
-              >
-                Changer de ville
-              </button>
-            </div>
+            {forecast.length > 0 && (
+              <div className="forecast-section">
+                <h2 className="forecast-title neon-cyan">Prévisions</h2>
+                <div className="forecast-row">
+                  {forecast.map((d) => (
+                    <div key={d.day} className={`forecast-card panel reveal ${iconAnimClass(d.main)}-sm`}>
+                      <span className="forecast-day">{dayLabel(d.day)}</span>
+                      <div className={`forecast-icon-wrap ${iconAnimClass(d.main)}`}>
+                        <img
+                          src={`https://openweathermap.org/img/wn/${d.icon}@2x.png`}
+                          alt={d.description}
+                          className="forecast-icon"
+                        />
+                      </div>
+                      <span className="forecast-max neon-pink">{d.tempMax}°</span>
+                      <span className="forecast-min">{d.tempMin}°</span>
+                      <span className="forecast-desc">{d.description}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
