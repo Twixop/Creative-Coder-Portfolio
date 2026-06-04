@@ -11,21 +11,27 @@ router.get("/weather", async (req, res) => {
 
   const lat = req.query.lat as string;
   const lon = req.query.lon as string;
+  const city = req.query.q as string;
 
-  if (!lat || !lon) {
-    res.status(400).json({ error: "Paramètres lat et lon requis." });
-    return;
-  }
+  let weatherUrl: string;
 
-  const latNum = parseFloat(lat);
-  const lonNum = parseFloat(lon);
-  if (isNaN(latNum) || isNaN(lonNum) || latNum < -90 || latNum > 90 || lonNum < -180 || lonNum > 180) {
-    res.status(400).json({ error: "Coordonnées invalides." });
+  if (city && city.trim().length > 0) {
+    weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city.trim())}&appid=${apiKey}&units=metric&lang=fr`;
+  } else if (lat && lon) {
+    const latNum = parseFloat(lat);
+    const lonNum = parseFloat(lon);
+    if (isNaN(latNum) || isNaN(lonNum) || latNum < -90 || latNum > 90 || lonNum < -180 || lonNum > 180) {
+      res.status(400).json({ error: "Coordonnées invalides." });
+      return;
+    }
+    weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latNum}&lon=${lonNum}&appid=${apiKey}&units=metric&lang=fr`;
+  } else {
+    res.status(400).json({ error: "Paramètre lat/lon ou q (ville) requis." });
     return;
   }
 
   try {
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latNum}&lon=${lonNum}&appid=${apiKey}&units=metric&lang=fr`;
+    const url = weatherUrl;
     const response = await fetch(url);
 
     if (!response.ok) {
