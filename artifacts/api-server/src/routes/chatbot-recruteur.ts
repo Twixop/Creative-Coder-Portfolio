@@ -150,7 +150,29 @@ async function saveTranscript(params: {
   return null;
 }
 
+/* Rate limiter en mémoire : max 10 messages / 15 min par IP */
+const rateMap = new Map<string, { count: number; resetAt: number }>();
+function checkRate(ip: string): boolean {
+  const now = Date.now();
+  const WINDOW = 15 * 60 * 1000;
+  const LIMIT = 10;
+  const entry = rateMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateMap.set(ip, { count: 1, resetAt: now + WINDOW });
+    return true;
+  }
+  if (entry.count >= LIMIT) return false;
+  entry.count++;
+  return true;
+}
+
 router.post("/chatbot-recruteur", async (req, res) => {
+  const ip = (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim() ?? req.socket.remoteAddress ?? "unknown";
+  if (!checkRate(ip)) {
+    res.status(429).json({ error: "Trop de messages envoyés. Réessaie dans quelques minutes." });
+    return;
+  }
+
   const baseUrl = process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL;
   const apiKey = process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY;
 

@@ -11,11 +11,12 @@ type Tool = {
 type AdminForm = {
   nom: string; categorie: string; departement: string; description: string;
   fonctions: string; contact: string; lienDoc: string; statut: Statut;
+  adminSecret: string;
 };
 
 const EMPTY_FORM: AdminForm = {
   nom: "", categorie: "", departement: "", description: "",
-  fonctions: "", contact: "", lienDoc: "", statut: "Actif",
+  fonctions: "", contact: "", lienDoc: "", statut: "Actif", adminSecret: "",
 };
 
 const STATUT_COLORS: Record<Statut, string> = {
@@ -106,10 +107,15 @@ export default function AnnuaireDemo() {
     setAdminLoading(true);
     setAdminMsg(null);
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (adminForm.adminSecret.trim()) {
+        headers["x-admin-secret"] = adminForm.adminSecret.trim();
+      }
+      const { adminSecret: _, ...payload } = adminForm;
       const r = await fetch(`${BASE}api/annuaire`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(adminForm),
+        headers,
+        body: JSON.stringify(payload),
       });
       const d = (await r.json()) as { tool?: Tool; error?: string };
       if (!r.ok) throw new Error(d.error || "Erreur serveur.");
@@ -222,6 +228,7 @@ export default function AnnuaireDemo() {
                 <Field label="Statut" name="statut" type="select" />
                 <Field label="Contact référent" name="contact" type="email" />
                 <Field label="Lien documentation" name="lienDoc" type="url" />
+                <Field label="Mot de passe admin (ADMIN_SECRET)" name="adminSecret" type="password" />
               </div>
               <Field label="Description" name="description" type="textarea" />
               <Field label="Fonctions principales" name="fonctions" type="textarea" />

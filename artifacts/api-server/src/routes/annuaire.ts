@@ -125,8 +125,20 @@ router.get("/annuaire", async (req, res) => {
   }
 });
 
-/* POST /api/annuaire — ajoute un outil (admin) */
+/* POST /api/annuaire — ajoute un outil (admin protégé par ADMIN_SECRET) */
 router.post("/annuaire", async (req, res) => {
+  /* Vérification du secret admin si la variable est configurée */
+  const adminSecret = process.env.ADMIN_SECRET;
+  if (adminSecret) {
+    const provided =
+      (req.headers["x-admin-secret"] as string | undefined) ??
+      req.headers.authorization?.replace(/^Bearer\s+/i, "");
+    if (provided !== adminSecret) {
+      res.status(401).json({ error: "Accès non autorisé. Secret admin incorrect." });
+      return;
+    }
+  }
+
   const token = process.env.AIRTABLE_TOKEN_V2 || process.env.AIRTABLE_TOKEN;
   if (!token) {
     res.status(500).json({ error: "Token Airtable non configuré." });
