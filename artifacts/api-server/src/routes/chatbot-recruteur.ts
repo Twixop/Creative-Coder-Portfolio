@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import type { Logger } from "pino";
+import { sendChatbotAlert } from "../lib/mailer";
 
 type ChatMessage = {
   role: "user" | "assistant";
