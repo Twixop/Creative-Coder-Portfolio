@@ -35,7 +35,7 @@ export function TabEnseignante() {
         extra={
           <div>
             <div className="tsa-section-title" style={{ fontSize: "0.9rem", marginTop: 16 }}>🎓 Formations & Certifications</div>
-            {["Certificat TEACCH — Université de Caroline du Nord", "Formation ABA niveau avancé — AFFORTHECC", "DU Autisme — Faculté de Médecine Paris VI", "Makaton — Association Française"].map(f => (
+            {["Certificat TEACCH — Université de Caroline du Nord", "Formation ABA niveau avancé — AFFORTHECC", "DU Autisme — Faculté de Médecine Paris VI"].map(f => (
               <div key={f} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, fontSize: "0.85rem" }}>
                 <span style={{ color: "var(--tsa-sage)" }}>✓</span> {f}
               </div>
