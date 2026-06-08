@@ -236,11 +236,26 @@ router.post("/chatbot-recruteur", async (req, res) => {
 
     const finalReply = reply || "Désolé, je n'ai pas réussi à formuler ma réponse. Pouvez-vous reformuler ?";
 
+    const allMessages = [...messages, { role: "assistant", content: finalReply }];
+
     const saveResult = await saveTranscript({
       log: req.log,
       recordId,
-      messages: [...messages, { role: "assistant", content: finalReply }],
+      messages: allMessages,
     });
+
+    /* Alerte email uniquement quand le chatbot annonce un score (fin d'entretien) */
+    const scoreMatch = finalReply.match(/(\d{1,3})\s*\/\s*100/);
+    if (scoreMatch) {
+      const candidat = detectCandidateName(allMessages);
+      const score = Number(scoreMatch[1]);
+      const excerpt = allMessages
+        .slice(-6)
+        .map((m) => `${m.role === "user" ? "Candidat" : "Recrut'IA"}: ${m.content}`)
+        .join("\n\n")
+        .slice(0, 1500);
+      void sendChatbotAlert({ candidat, score, date: new Date().toISOString(), excerpt });
+    }
 
     res.json({
       reply: finalReply,

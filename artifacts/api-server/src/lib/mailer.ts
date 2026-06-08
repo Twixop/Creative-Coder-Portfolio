@@ -1,4 +1,3 @@
-import nodemailer from "nodemailer";
 import { logger } from "./logger";
 
 export async function sendChatbotAlert(params: {
@@ -7,24 +6,13 @@ export async function sendChatbotAlert(params: {
   date: string;
   excerpt: string;
 }) {
-  const user = process.env.EMAIL_USER;
-  const pass = process.env.EMAIL_PASS;
-  const to = process.env.ALERT_EMAIL_TO || user;
-  const host = process.env.EMAIL_SMTP_HOST || "smtp-mail.outlook.com";
-  const port = Number(process.env.EMAIL_SMTP_PORT || "587");
+  const apiKey = process.env.RESEND_API_KEY;
+  const to = process.env.ALERT_EMAIL_TO;
 
-  if (!user || !pass || !to) {
-    logger.debug("Email alert skipped — EMAIL_USER / EMAIL_PASS / ALERT_EMAIL_TO not configured");
+  if (!apiKey || !to) {
+    logger.debug("Email alert skipped — RESEND_API_KEY / ALERT_EMAIL_TO not configured");
     return;
   }
-
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass },
-    tls: { rejectUnauthorized: false },
-  });
 
   const scoreHtml = params.score !== null
     ? `<p><strong>Score :</strong> <span style="color:#8a4dff;font-size:1.4em">${params.score}/100</span></p>`
@@ -44,13 +32,26 @@ export async function sendChatbotAlert(params: {
   `;
 
   try {
-    await transporter.sendMail({
-      from: `"Recrut'IA — Twixop" <${user}>`,
-      to,
-      subject: `🤖 Candidat reçu : ${params.candidat}${params.score !== null ? ` — Score ${params.score}/100` : ""}`,
-      html,
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Recrut'IA <onboarding@resend.dev>",
+        to: [to],
+        subject: `🤖 Candidat reçu : ${params.candidat}${params.score !== null ? ` — Score ${params.score}/100` : ""}`,
+        html,
+      }),
     });
-    logger.info({ to, candidat: params.candidat }, "Chatbot alert email sent");
+
+    if (res.ok) {
+      logger.info({ to, candidat: params.candidat }, "Chatbot alert email sent via Resend");
+    } else {
+      const err = await res.text();
+      logger.warn({ status: res.status, err }, "Resend email failed");
+    }
   } catch (err) {
     logger.warn({ err }, "Failed to send chatbot alert email");
   }
