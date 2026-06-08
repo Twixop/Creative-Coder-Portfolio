@@ -15,22 +15,24 @@ async function fetchRecords(token: string, baseId: string, table: string): Promi
   return data.records ?? [];
 }
 
-function detectDataField(record: AirtableRecord | null): string {
-  if (!record) return "Données";
-  const candidates = ["Données", "Donnees", "State", "Data", "JSON"];
-  for (const c of candidates) {
-    if (typeof record.fields[c] === "string") return c;
-  }
-  return "Données";
-}
-
 function readState(record: AirtableRecord): string | null {
-  const candidates = ["Données", "Donnees", "State", "Data", "JSON", "Name", "Nom"];
+  const candidates = ["Notes", "Données", "Donnees", "State", "Data", "JSON", "Name", "Nom"];
   for (const c of candidates) {
     const v = record.fields[c];
-    if (typeof v === "string" && v.startsWith("{")) return v;
+    if (typeof v === "string" && v.trim().startsWith("{")) return v;
   }
   return null;
+}
+
+function makeLabel(): string {
+  const now = new Date().toLocaleString("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `État École TSA — sauvegarde du ${now}`;
 }
 
 router.get("/tsa/state", async (req, res) => {
@@ -103,10 +105,12 @@ router.post("/tsa/state", async (req, res) => {
     const existingRecord = existing[0] ?? null;
     const targetId = recordId || existingRecord?.id;
 
-    const dataField = detectDataField(existingRecord);
+    const label = makeLabel();
     const fieldSets: Record<string, string>[] = [
-      { [dataField]: json, "Date": new Date().toISOString() },
-      { [dataField]: json },
+      { "Name": label, "Notes": json },
+      { "Notes": json },
+      { "Name": label, "Données": json },
+      { "Données": json },
       { "Name": json },
       { "Nom": json },
     ];
