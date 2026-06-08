@@ -1,6 +1,107 @@
 import React from "react";
 import { useTsa, todayStr, CRENEAUX } from "../TsaContext";
+import type { TsaState } from "../TsaContext";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { jsPDF } from "jspdf";
+
+function generatePDF(state: TsaState, today: string) {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const W = 210;
+  const margin = 15;
+  let y = 0;
+
+  function header() {
+    doc.setFillColor(100, 160, 120);
+    doc.rect(0, 0, W, 30, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(17);
+    doc.setFont("helvetica", "bold");
+    doc.text("École TSA — Tableau de Bord & Planning", margin, 14);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Date : ${today}`, margin, 23);
+    y = 42;
+    doc.setTextColor(40, 40, 40);
+  }
+
+  header();
+
+  const absentsIdx = state.eleves.map((_, i) =>
+    (state.absences[i] ?? []).some(a => a.date === today)
+  );
+  const absentsNoms = state.eleves.filter((_, i) => absentsIdx[i]);
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(60, 120, 80);
+  doc.text("Absences du jour", margin, y); y += 7;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(40, 40, 40);
+  doc.text(absentsNoms.length === 0 ? "Aucune absence." : absentsNoms.join(", "), margin + 2, y); y += 10;
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(60, 120, 80);
+  doc.text("Humeurs du jour", margin, y); y += 7;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(40, 40, 40);
+  state.eleves.forEach((nom, i) => {
+    const h = (state.humeurs[i] ?? []).find(hh => hh.date === today);
+    const absent = absentsIdx[i];
+    doc.text(`${nom} : ${absent ? "absent(e)" : (h ? h.humeur + (h.note ? " — " + h.note : "") : "non saisi")}`, margin + 2, y);
+    y += 5.5;
+  }); y += 8;
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(60, 120, 80);
+  doc.text("Planning individuel du jour", margin, y); y += 10;
+
+  state.eleves.forEach((nom, i) => {
+    if (y > 255) { doc.addPage(); y = 20; }
+
+    const absent = absentsIdx[i];
+    doc.setFillColor(absent ? 240 : 225, absent ? 240 : 245, absent ? 240 : 232);
+    doc.rect(margin, y - 5, W - 2 * margin, 8, "F");
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(absent ? 150 : 40, absent ? 150 : 100, absent ? 150 : 70);
+    doc.text(`${nom}${absent ? "  — ABSENT(E)" : ""}`, margin + 2, y);
+    doc.setTextColor(40, 40, 40);
+    y += 9;
+
+    if (!absent) {
+      const planning = state.planningJour[i] ?? {};
+      const hasSomething = CRENEAUX.some(c => planning[c]);
+      if (!hasSomething) {
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "italic");
+        doc.setTextColor(160, 160, 160);
+        doc.text("Aucune activité planifiée.", margin + 4, y);
+        y += 6;
+      } else {
+        CRENEAUX.forEach(c => {
+          const act = planning[c];
+          if (!act) return;
+          if (y > 280) { doc.addPage(); y = 20; }
+          doc.setFontSize(8);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(120, 120, 120);
+          doc.text(c, margin + 4, y);
+          doc.setTextColor(40, 40, 40);
+          doc.setFont("helvetica", "bold");
+          doc.text(act.nom, margin + 26, y);
+          y += 5;
+        });
+      }
+    }
+    y += 6;
+  });
+
+  doc.save(`planning-tsa-${today}.pdf`);
+}
 
 export default function TabTableauBord() {
   const { state, dispatch } = useTsa();
@@ -45,7 +146,16 @@ export default function TabTableauBord() {
 
   return (
     <div>
-      <h2 className="tsa-section-title">📊 Tableau de Bord</h2>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 4 }}>
+        <h2 className="tsa-section-title" style={{ margin: 0 }}>📊 Tableau de Bord</h2>
+        <button
+          className="tsa-btn tsa-btn-secondary"
+          style={{ display: "flex", alignItems: "center", gap: 6 }}
+          onClick={() => generatePDF(state, today)}
+        >
+          🖨️ Imprimer en PDF
+        </button>
+      </div>
 
       {/* Absences */}
       <div className="tsa-card" style={{ marginBottom: 20 }}>

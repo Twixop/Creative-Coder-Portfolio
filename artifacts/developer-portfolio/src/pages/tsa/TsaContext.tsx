@@ -72,7 +72,7 @@ export type CarnetEntry = {
 
 type Planning = Record<string, Record<string, Activite | null>>;
 
-type State = {
+export type TsaState = {
   eleves: string[];
   activites: Activite[];
   profils: Record<number, ProfilEleve>;
@@ -102,7 +102,7 @@ type Action =
   | { type: "ADD_PROJET"; projet: ProjetAnnuel }
   | { type: "UPDATE_PROJET"; projet: ProjetAnnuel }
   | { type: "SET_CARNET"; eleveIndex: number; semaine: string; entry: Partial<CarnetEntry> }
-  | { type: "LOAD"; state: State };
+  | { type: "LOAD"; state: TsaState };
 
 const defaultProfil = (): ProfilEleve => ({
   niveauComm: "verbal",
@@ -113,7 +113,7 @@ const defaultProfil = (): ProfilEleve => ({
   objectifs: [],
 });
 
-const initialState: State = {
+const initialState: TsaState = {
   eleves: DEFAULT_ELEVES,
   activites: DEFAULT_ACTIVITES,
   profils: {},
@@ -132,7 +132,7 @@ const initialState: State = {
   carnets: {},
 };
 
-function reducer(state: State, action: Action): State {
+function reducer(state: TsaState, action: Action): TsaState {
   switch (action.type) {
     case "LOAD": return action.state;
     case "SET_ELEVE": {
@@ -187,7 +187,7 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-const TsaContext = createContext<{ state: State; dispatch: React.Dispatch<Action> } | null>(null);
+const TsaContext = createContext<{ state: TsaState; dispatch: React.Dispatch<Action> } | null>(null);
 
 export function TsaProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
