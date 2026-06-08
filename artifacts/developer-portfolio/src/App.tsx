@@ -37,6 +37,15 @@ const fallbackProjects: Project[] = [
     demoUrl: "https://example.com",
     codeUrl: "https://github.com/example",
   },
+  {
+    id: "fallback-4",
+    name: "École TSA",
+    description:
+      "Application de gestion pédagogique pour une classe d'élèves avec troubles du spectre autistique — planning, fiches élèves, humeurs, carnet de liaison.",
+    stack: ["React", "localStorage", "Recharts"],
+    demoUrl: "https://example.com",
+    codeUrl: "https://github.com/example",
+  },
 ];
 
 function App() {
@@ -63,7 +72,10 @@ function App() {
         const data = (await response.json()) as { projects?: Project[] };
 
         if (isMounted && Array.isArray(data.projects) && data.projects.length > 0) {
-          setProjects(data.projects);
+          const tsaAlreadyPresent = data.projects.some((p: Project) =>
+            p.name.toLowerCase().includes("tsa") || p.name.toLowerCase().includes("école tsa")
+          );
+          setProjects(tsaAlreadyPresent ? data.projects : [...data.projects, fallbackProjects[fallbackProjects.length - 1]]);
           setErrorMessage("");
         }
       } catch (error) {
@@ -228,14 +240,17 @@ function App() {
                 const isChatbotRecruteur = project.name.toLowerCase().includes("chatbot recruteur");
                 const isNeonWeather = project.name.toLowerCase().includes("neon weather") || project.name.toLowerCase().includes("weather panel");
                 const isAnnuaire = project.name.toLowerCase().includes("annuaire");
+                const isTsa = project.name.toLowerCase().includes("tsa") || project.name.toLowerCase().includes("école tsa");
                 const demoUrl = isChatbotRecruteur
                   ? `${import.meta.env.BASE_URL}demos/chatbot-recruteur`
                   : isNeonWeather
                   ? `${import.meta.env.BASE_URL}demos/neon-weather`
                   : isAnnuaire
                   ? `${import.meta.env.BASE_URL}demos/annuaire`
+                  : isTsa
+                  ? `${import.meta.env.BASE_URL}demos/ecole-tsa`
                   : project.demoUrl;
-                const demoIsInternal = isChatbotRecruteur || isNeonWeather || isAnnuaire;
+                const demoIsInternal = isChatbotRecruteur || isNeonWeather || isAnnuaire || isTsa;
                 return (
                   <article className="project-card reveal" key={project.id}>
                     <h3>{project.name}</h3>
