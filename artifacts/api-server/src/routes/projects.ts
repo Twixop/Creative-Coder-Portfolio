@@ -50,12 +50,36 @@ function readStack(fields: Record<string, unknown>) {
   return ["HTML", "CSS", "JavaScript"];
 }
 
+const TSA_DESCRIPTION =
+  "Application de gestion pédagogique pour une classe d'élèves avec troubles du spectre autistique (TSA). " +
+  "Elle réunit les plannings journaliers multi-dates, les fiches élèves, le suivi des humeurs, le carnet de liaison et l'export PDF. " +
+  "Les données se synchronisent avec Airtable pour être sauvegardées en ligne et partagées entre plusieurs ordinateurs, " +
+  "et l'accès est protégé par mot de passe.";
+const TSA_STACK = ["React", "TypeScript", "Airtable", "Recharts", "jsPDF"];
+
+function isTsaRecord(name: string): boolean {
+  return name.toLowerCase().includes("tsa");
+}
+
 function mapRecord(record: AirtableRecord): PortfolioProject {
   const { fields } = record;
 
+  const name = readText(fields, ["Nom", "Name", "Titre", "Title", "Projet", "Project"], "Projet sans titre");
+
+  if (isTsaRecord(name)) {
+    return {
+      id: record.id,
+      name: "École TSA",
+      description: TSA_DESCRIPTION,
+      stack: TSA_STACK,
+      demoUrl: "ecole-tsa",
+      codeUrl: readText(fields, ["Code", "GitHub", "Github", "Repo", "Repository"], "https://github.com/Twixop/Creative-Coder-Portfolio"),
+    };
+  }
+
   return {
     id: record.id,
-    name: readText(fields, ["Nom", "Name", "Titre", "Title", "Projet", "Project"], "Projet sans titre"),
+    name,
     description: readText(
       fields,
       ["Ma Solution", "Solution", "Description", "Desc", "Résumé", "Resume", "Summary", "Détails", "Détail", "Detail"],
