@@ -54,6 +54,33 @@ export function TabEnseignante() {
   );
 }
 
+const aeshList = [
+  {
+    nom: "Sophie Martin",
+    emoji: "🤝",
+    description: "Accompagnante depuis 5 ans, spécialisée TSA. Travaille en étroite collaboration avec l'enseignante pour adapter supports et activités à chaque élève.",
+    eleves: "4 élèves",
+    horaires: "Lun–Ven, 8h30 → 16h00",
+    email: "s.martin@ecole-tsa.fr",
+  },
+  {
+    nom: "Clara Dupont",
+    emoji: "🌸",
+    description: "Accompagnante depuis 3 ans, formée aux outils de communication alternative (PECS, pictogrammes). Spécialisée dans la gestion sensorielle et la régulation émotionnelle.",
+    eleves: "3 élèves",
+    horaires: "Lun–Jeu, 8h30 → 15h30",
+    email: "c.dupont@ecole-tsa.fr",
+  },
+  {
+    nom: "Nadia Bensalem",
+    emoji: "⭐",
+    description: "Accompagnante depuis 2 ans, avec une formation en éducation spécialisée. Elle assure un soutien à la socialisation et à l'autonomie lors des activités collectives.",
+    eleves: "3 élèves",
+    horaires: "Mar–Ven, 9h00 → 16h00",
+    email: "n.bensalem@ecole-tsa.fr",
+  },
+];
+
 export function TabAESH() {
   return (
     <div>
@@ -63,23 +90,28 @@ export function TabAESH() {
           <span className="tsa-tooltip-text">L'AESH (Accompagnant·e des Élèves en Situation de Handicap) aide les élèves TSA à participer pleinement à la vie scolaire en leur apportant une aide humaine individualisée.</span>
         </span>
       </h2>
-      <ProfileCard
-        role="AESH — Accompagnante"
-        emoji="🤝"
-        nom="Sophie Martin"
-        description="Accompagnante des élèves en situation de handicap depuis 5 ans, spécialisée dans l'accompagnement des enfants avec TSA. Elle travaille en étroite collaboration avec l'enseignante pour adapter les supports et les activités à chaque élève."
-        extra={
-          <div>
-            <div className="tsa-section-title" style={{ fontSize: "0.9rem", marginTop: 16 }}>📋 Élèves accompagnés</div>
-            <p style={{ color: "var(--tsa-muted)", fontSize: "0.85rem" }}>Accompagnement individualisé de 4 élèves (noms anonymisés selon les règles RGPD de l'établissement).</p>
-            <div className="tsa-section-title" style={{ fontSize: "0.9rem", marginTop: 16 }}>🕐 Horaires</div>
-            <p style={{ color: "var(--tsa-muted)", fontSize: "0.85rem" }}>Lundi au vendredi, 8h30 → 16h00</p>
-            <div style={{ marginTop: 12, fontSize: "0.85rem" }}>
-              📧 <a href="mailto:s.martin@ecole-tsa.fr" style={{ color: "var(--tsa-sage)" }}>s.martin@ecole-tsa.fr</a>
-            </div>
-          </div>
-        }
-      />
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
+        {aeshList.map((a) => (
+          <ProfileCard
+            key={a.nom}
+            role="AESH — Accompagnante"
+            emoji={a.emoji}
+            nom={a.nom}
+            description={a.description}
+            extra={
+              <div>
+                <div className="tsa-section-title" style={{ fontSize: "0.9rem", marginTop: 16 }}>📋 Élèves accompagnés</div>
+                <p style={{ color: "var(--tsa-muted)", fontSize: "0.85rem" }}>{a.eleves} (noms anonymisés — RGPD)</p>
+                <div className="tsa-section-title" style={{ fontSize: "0.9rem", marginTop: 16 }}>🕐 Horaires</div>
+                <p style={{ color: "var(--tsa-muted)", fontSize: "0.85rem" }}>{a.horaires}</p>
+                <div style={{ marginTop: 12, fontSize: "0.85rem" }}>
+                  📧 <a href={`mailto:${a.email}`} style={{ color: "var(--tsa-sage)" }}>{a.email}</a>
+                </div>
+              </div>
+            }
+          />
+        ))}
+      </div>
     </div>
   );
 }
