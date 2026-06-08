@@ -10,7 +10,7 @@ function EleveRemplacement({ index }: { index: number }) {
 
   const keyDecl = profil.declencheurs.slice(0, 3);
   const keyStrat = profil.strategies.slice(0, 3);
-  const planning = state.planningJour[index] ?? {};
+  const planning = (state.plannings[today] ?? {})[index] ?? {};
   const activitesJour = CRENEAUX.filter(c => planning[c]).map(c => ({ creneau: c, act: planning[c]! }));
 
   return (

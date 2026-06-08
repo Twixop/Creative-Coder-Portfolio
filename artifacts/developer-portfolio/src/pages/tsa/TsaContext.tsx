@@ -71,7 +71,7 @@ export type CarnetEntry = {
   message: string;
 };
 
-type Planning = Record<string, Record<string, Activite | null>>;
+export type DayPlanning = Record<string, Record<string, Activite | null>>;
 
 export type TsaState = {
   eleves: string[];
@@ -79,8 +79,7 @@ export type TsaState = {
   profils: Record<number, ProfilEleve>;
   humeurs: Record<number, HumeurEntry[]>;
   absences: Record<number, AbsenceEntry[]>;
-  planningJour: Planning;
-  planningHebdo: Record<string, Planning>;
+  plannings: Record<string, DayPlanning>;
   evenements: Evenement[];
   jalons: Jalon[];
   projetsAnnuels: ProjetAnnuel[];
@@ -95,8 +94,8 @@ type Action =
   | { type: "SET_PROFIL"; index: number; profil: Partial<ProfilEleve> }
   | { type: "ADD_HUMEUR"; index: number; entry: HumeurEntry }
   | { type: "SET_ABSENCE"; index: number; date: string; absent: boolean }
-  | { type: "SET_PLANNING_CELL"; eleve: number; creneau: string; activite: Activite | null }
-  | { type: "RESET_PLANNING" }
+  | { type: "SET_PLANNING_CELL"; date: string; eleve: number; creneau: string; activite: Activite | null }
+  | { type: "RESET_PLANNING"; date: string }
   | { type: "ADD_EVENEMENT"; ev: Evenement }
   | { type: "DELETE_EVENEMENT"; id: string }
   | { type: "ADD_JALON"; jalon: Jalon }
@@ -121,8 +120,7 @@ const initialState: TsaState = {
   profils: {},
   humeurs: {},
   absences: {},
-  planningJour: {},
-  planningHebdo: {},
+  plannings: {},
   evenements: [],
   jalons: [
     { id: "j1", titre: "Rentrée scolaire", date: "2024-09-02", description: "Premier jour de l'année" },
@@ -134,9 +132,20 @@ const initialState: TsaState = {
   carnets: {},
 };
 
+function migrateState(raw: unknown): TsaState {
+  const s = raw as Record<string, unknown>;
+  if (s.planningJour !== undefined && s.plannings === undefined) {
+    const today = new Date().toISOString().split("T")[0];
+    s.plannings = { [today]: s.planningJour as DayPlanning };
+    delete s.planningJour;
+    delete s.planningHebdo;
+  }
+  return { ...initialState, ...s } as TsaState;
+}
+
 function reducer(state: TsaState, action: Action): TsaState {
   switch (action.type) {
-    case "LOAD": return action.state;
+    case "LOAD": return migrateState(action.state);
     case "SET_ELEVE": {
       const eleves = [...state.eleves];
       eleves[action.index] = action.nom;
@@ -160,17 +169,23 @@ function reducer(state: TsaState, action: Action): TsaState {
       return { ...state, absences: { ...state.absences, [action.index]: next } };
     }
     case "SET_PLANNING_CELL": {
-      const eleve = action.eleve;
-      const prevEleve = state.planningJour[eleve] ?? {};
+      const datePlan = state.plannings[action.date] ?? {};
+      const prevEleve = datePlan[action.eleve] ?? {};
       return {
         ...state,
-        planningJour: {
-          ...state.planningJour,
-          [eleve]: { ...prevEleve, [action.creneau]: action.activite },
+        plannings: {
+          ...state.plannings,
+          [action.date]: {
+            ...datePlan,
+            [action.eleve]: { ...prevEleve, [action.creneau]: action.activite },
+          },
         },
       };
     }
-    case "RESET_PLANNING": return { ...state, planningJour: {} };
+    case "RESET_PLANNING": {
+      const { [action.date]: _removed, ...rest } = state.plannings;
+      return { ...state, plannings: rest };
+    }
     case "ADD_EVENEMENT": return { ...state, evenements: [...state.evenements, action.ev] };
     case "DELETE_EVENEMENT": return { ...state, evenements: state.evenements.filter(e => e.id !== action.id) };
     case "ADD_JALON": return { ...state, jalons: [...state.jalons, action.jalon] };

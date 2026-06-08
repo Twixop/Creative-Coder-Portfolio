@@ -73,7 +73,7 @@ function generatePDF(state: TsaState, today: string) {
     y += 9;
 
     if (!absent) {
-      const planning = state.planningJour[i] ?? {};
+      const planning = (state.plannings[today] ?? {})[i] ?? {};
       const hasSomething = CRENEAUX.some(c => planning[c]);
       if (!hasSomething) {
         doc.setFontSize(8);
@@ -115,12 +115,14 @@ export default function TabTableauBord() {
     (state.humeurs[i] ?? []).find(h => h.date === today)
   );
 
-  const activiteCount = Object.values(state.planningJour).reduce((acc, eleve) => {
+  const todayPlanning = state.plannings[today] ?? {};
+
+  const activiteCount = Object.values(todayPlanning).reduce((acc, eleve) => {
     return acc + Object.values(eleve).filter(Boolean).length;
   }, 0);
 
   const activiteUsage: Record<string, number> = {};
-  Object.values(state.planningJour).forEach(elevePlanning => {
+  Object.values(todayPlanning).forEach(elevePlanning => {
     Object.values(elevePlanning).forEach(act => {
       if (act) activiteUsage[act.nom] = (activiteUsage[act.nom] ?? 0) + 1;
     });
@@ -131,7 +133,7 @@ export default function TabTableauBord() {
     .slice(0, 6);
 
   const sansPlanning = state.eleves.filter((_, i) =>
-    !absentsAujourdhui[i] && Object.keys(state.planningJour[i] ?? {}).length === 0
+    !absentsAujourdhui[i] && Object.keys(todayPlanning[i] ?? {}).length === 0
   );
 
   const prochains = state.evenements

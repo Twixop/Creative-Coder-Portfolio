@@ -236,7 +236,7 @@ router.post("/chatbot-recruteur", async (req, res) => {
 
     const finalReply = reply || "Désolé, je n'ai pas réussi à formuler ma réponse. Pouvez-vous reformuler ?";
 
-    const allMessages = [...messages, { role: "assistant", content: finalReply }];
+    const allMessages: ChatMessage[] = [...messages, { role: "assistant" as const, content: finalReply }];
 
     const saveResult = await saveTranscript({
       log: req.log,
