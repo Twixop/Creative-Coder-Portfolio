@@ -56,3 +56,4 @@ externalPort = 3003
 [userenv.shared]
 AIRTABLE_BASE_ID = "appe7LRwYtNkRQwuU"
 AIRTABLE_TABLE_NAME = "Projet"
+AIRTABLE_CHATBOT_TABLE_NAME = "Chatbot Recruteur"
