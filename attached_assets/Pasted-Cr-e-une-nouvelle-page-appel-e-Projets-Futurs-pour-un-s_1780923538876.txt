@@ -1,0 +1,284 @@
+Crée une nouvelle page appelée "Projets Futurs" pour un site web dédié à une école
+accueillant des élèves avec des troubles du spectre autistique (TSA).
+
+---
+
+## STRUCTURE GÉNÉRALE
+
+Ajoute un lien "Projets Futurs" dans la barre de navigation existante du site,
+qui redirige vers `/projets-futurs`.
+
+---
+
+## DESIGN ET ESTHÉTIQUE
+
+Ambiance : Chaleureuse, rassurante, professionnelle.
+Palette de couleurs : pastels doux — vert sauge, crème chaud, bleu ciel léger.
+Typographie : Arrondie et lisible (ex. Nunito ou Quicksand).
+Mise en page : Cartes avec ombres douces, animations légères sur les transitions d'onglets.
+Accessibilité : Contrastes suffisants, texte clair.
+Le site s'adresse au personnel scolaire, aux parents et aux éducateurs.
+
+---
+
+## PAGE PARAMÈTRES (icône ⚙️ en haut à droite, accessible depuis toutes les pages)
+
+### Gestion des élèves
+- Liste des 10 élèves avec prénoms modifiables
+- Champ texte éditable pour chaque nom
+- Bouton "Sauvegarder les modifications"
+- Les noms sont stockés en localStorage et se répercutent partout dans l'application
+  via React Context
+- Prénoms par défaut : Élève 1, Élève 2 ... Élève 10
+
+### Gestion de la bibliothèque d'activités
+- Liste complète des activités disponibles pour le drag & drop
+- Chaque activité a : un nom, une icône/emoji, une couleur
+- Bouton "Ajouter une activité" : formulaire (nom + choix couleur + choix emoji)
+- Bouton "Supprimer" sur chaque activité existante
+- Activités pré-remplies par défaut :
+  🎨 Atelier créatif (orange)
+  📖 Lecture (bleu)
+  🧘 Temps calme (violet)
+  🏃 Motricité (vert)
+  🎵 Musique (rose)
+  🧩 Jeux éducatifs (jaune)
+  🍽️ Repas (marron clair)
+  🌿 Temps extérieur (vert foncé)
+  💬 Orthophonie (bleu clair)
+  🖐️ Ergothérapie (pêche)
+  🔢 Mathématiques (rouge doux)
+  ✏️ Écriture (gris bleu)
+
+---
+
+## NAVIGATION PAR ONGLETS (barre horizontale avec indicateur glissant)
+
+---
+
+### Onglet 1 — 👩‍🏫 Enseignante
+- Carte de profil : nom, photo placeholder, diplômes, approche pédagogique, contact
+- Bloc "philosophie pédagogique"
+- Formations et certifications liées à l'autisme
+
+---
+
+### Onglet 2 — 🤝 AESH
+(AESH = Accompagnant·e des Élèves en Situation de Handicap)
+- Même structure de carte que l'onglet Enseignante
+- Champs : nom, description du rôle, élèves accompagnés (anonymisés), horaires
+- Infobulle ℹ️ expliquant le rôle de l'AESH
+
+---
+
+### Onglet 3 — 🧒 Fiches Élèves
+
+Un onglet dédié avec une carte par élève (noms depuis les paramètres).
+Cliquer sur une carte ouvre la fiche complète de l'élève.
+
+Chaque fiche contient :
+- Prénom (modifiable via les paramètres)
+- Photo placeholder
+- Niveau de communication (verbal / semi-verbal / non-verbal)
+- Sensibilités sensorielles :
+  → Bruit (tolérance faible / moyenne / haute)
+  → Lumière (tolérance faible / moyenne / haute)
+  → Toucher (tolérance faible / moyenne / haute)
+  → Foule (tolérance faible / moyenne / haute)
+- Déclencheurs de stress connus (liste de tags modifiables)
+- Stratégies d'apaisement (liste de tags modifiables)
+- Notes libres pour l'enseignante / l'AESH
+- Section "Objectifs individuels" avec suivi de progression :
+  → Chaque objectif a un titre, une description, et une barre de progression (0-100%)
+  → Bouton "Ajouter un objectif"
+  → Historique des mises à jour avec date
+- Suivi humeur hebdomadaire :
+  → Graphique simple semaine par semaine
+  → Données alimentées depuis le tableau de bord
+
+Toutes les données sont stockées en localStorage par élève.
+
+---
+
+### Onglet 4 — 😊 Humeur du Jour
+
+Affiché chaque matin, accessible rapidement.
+- Grille des 10 élèves (noms depuis les paramètres)
+- Pour chaque élève : échelle visuelle à cocher
+  😊 Bonne humeur / 😐 Neutre / 😟 Difficile / 😡 Agité / 😴 Fatigué
+- Champ "note rapide" optionnel par élève
+- Bouton "Valider la saisie du jour"
+- Historique consultable (par semaine, par élève)
+- Les données alimentent automatiquement le graphique de suivi dans les fiches élèves
+- Visible en résumé dans le Tableau de Bord
+
+---
+
+### Onglet 5 — 📅 Organisation Journalière
+
+#### Vue Globale (défaut)
+- Tableau : colonnes = 10 élèves, lignes = créneaux horaires (8h00→17h00, par 30 min)
+- Drag & drop depuis la bibliothèque latérale vers chaque cellule
+- Chaque activité affichée avec icône + couleur
+- Élève absent : case grisée automatiquement (géré depuis Tableau de Bord)
+- Bouton "Dupliquer cette journée sur toute la semaine"
+- Bouton "Réinitialiser" et "Sauvegarder comme modèle"
+
+#### Vue Individuelle
+- Sélecteur d'élève (dropdown avec les 10 prénoms)
+- Timeline verticale avec créneaux horaires
+- Pictogrammes grand format
+- Bouton "Imprimer / Exporter en PDF" ce planning individuel (html2canvas + jsPDF)
+- Bouton "Générer fiche pictogrammes A4" : fiche imprimable avec les activités
+  du jour en grand format, à afficher dans la classe
+
+#### Panneau bibliothèque (commun aux deux vues)
+- Barre latérale gauche rétractable
+- Liste de toutes les activités (depuis les paramètres)
+- Drag depuis ce panneau vers n'importe quelle cellule
+
+---
+
+### Onglet 6 — 📆 Organisation Hebdomadaire
+
+#### Vue Globale
+- Grille : colonnes = jours (Lundi→Vendredi), lignes = créneaux horaires
+- Chaque cellule peut contenir plusieurs activités (une par élève)
+- Affichage condensé avec initiales ou couleur de chaque élève
+- Drag & drop depuis la bibliothèque
+- Bouton "Copier la semaine" pour dupliquer sur la semaine suivante
+- Historique des semaines passées consultable (boutons < semaine précédente >)
+
+#### Vue Individuelle
+- Sélecteur d'élève (dropdown)
+- Grille hebdomadaire pour l'élève sélectionné uniquement
+- Drag & drop depuis la bibliothèque
+- Bouton "Imprimer / Exporter en PDF" le planning hebdomadaire de l'élève
+
+---
+
+### Onglet 7 — 🗓️ Planning Mensuel
+- Vue calendrier mensuel
+- Événements spéciaux mis en évidence : sorties, ateliers, bilans
+- Cliquer sur un jour ouvre un panneau latéral avec le détail
+- Légende des types d'événements
+- Bouton "Ajouter un événement" (formulaire : titre, date, type, description)
+- Filtres par type d'événement
+
+---
+
+### Onglet 8 — 🎯 Projet Annuel
+- Timeline horizontale de Septembre à Juin
+- Jalons cliquables : rentrée, bilans trimestriels, fête de fin d'année, sorties
+- Section "Objectifs pédagogiques annuels" avec barres de progression
+- Section "Partenariats et intervenants extérieurs" (cartes)
+- Bouton "Ajouter un jalon"
+
+---
+
+### Onglet 9 — 📊 Tableau de Bord
+
+Vue d'ensemble rapide, page d'accueil par défaut de la section.
+
+- Gestion des absences du jour :
+  → Cases à cocher pour marquer un élève absent
+  → Les plannings de l'élève absent sont automatiquement grisés
+  → Historique des absences par élève
+
+- Indicateurs visuels :
+  → Nombre d'activités planifiées cette semaine
+  → Taux de remplissage des plannings (global et par élève)
+  → Prochains événements du mois
+  → Activités les plus utilisées (mini graphique barres)
+  → Récapitulatif des humeurs du jour (depuis l'onglet Humeur)
+
+- Alertes rapides :
+  → Élèves sans planning cette semaine
+  → Objectifs individuels non mis à jour depuis + de 2 semaines
+
+---
+
+### Onglet 10 — 🔄 Mode Remplacement
+
+Vue simplifiée pensée pour un remplaçant qui arrive sans connaître les élèves.
+
+- Accès en un clic depuis la page d'accueil (bouton visible "Mode Remplacement")
+- Affiche pour chaque élève :
+  → Prénom
+  → Niveau de communication (verbal / semi-verbal / non-verbal)
+  → ⚠️ Sensibilités importantes (2-3 points clés en rouge)
+  → ✅ Stratégies d'apaisement (2-3 points clés en vert)
+  → Planning du jour (simplifié, pictogrammes grands)
+- Mise en page claire, grande typographie, pas de superflu
+- Bouton "Imprimer la fiche de remplacement" (PDF global de tous les élèves)
+- Ce mode est en lecture seule (pas de modification possible)
+
+---
+
+### Onglet 11 — 📝 Carnet de Liaison
+
+Journal de bord hebdomadaire à destination des familles.
+
+- Sélecteur de semaine
+- Éditeur de texte riche (gras, listes, titres) par élève ou pour le groupe
+- Sections pré-remplies : "Activités de la semaine", "Points positifs",
+  "Points à travailler", "Message aux familles"
+- Bouton "Générer le carnet PDF" : mise en page soignée, logo école en en-tête
+- Historique des carnets précédents consultable
+
+---
+
+### Onglet 12 — 📚 Ressources & Outils
+- Cartes de liens : méthodes TEACCH, ABA, PECS, Makaton
+- Supports visuels téléchargeables (placeholders PDF)
+- Section "Outils numériques recommandés"
+- Section FAQ parents : questions fréquentes sur la scolarisation TSA,
+  le rôle de l'AESH, les méthodes utilisées
+
+---
+
+### Onglet 13 — ➕ Autres Projets
+- Grille de cartes pour les projets à venir
+- Chaque carte : titre, description, badge statut (En cours / Planifié / Idée),
+  responsable, date cible
+- Bouton "Proposer un projet"
+
+---
+
+## MODE PLEIN ÉCRAN (bouton 🖥️ accessible depuis les onglets planning)
+- Masque la navigation, affiche uniquement le planning du jour
+- Grande typographie, pictogrammes XXL
+- Conçu pour être projeté au tableau interactif de la classe
+- Bouton "Quitter le plein écran" discret en bas de page
+
+---
+
+## EXIGENCES TECHNIQUES
+
+- Framework : React avec hooks (useState, useContext, useReducer)
+- Context global : ElèvesContext (noms + données profil) et ActivitésContext
+- Données stockées en localStorage (noms élèves, activités, plannings, humeurs,
+  absences, carnets de liaison)
+- Drag & drop : librairie @dnd-kit/core
+- Éditeur de texte riche : librairie react-quill (pour le carnet de liaison)
+- Export PDF : html2canvas + jsPDF
+- Graphiques : recharts (humeur, progression, tableau de bord)
+- Responsive mobile
+- Transitions d'onglets fluides (fade ou slide)
+- Tout le contenu en français
+- Accessibilité : aria-labels, contrastes suffisants
+- Pas de backend — tout en localStorage
+
+---
+
+## REMARQUES IMPORTANTES
+- Les noms des élèves définis dans Paramètres se mettent à jour partout
+  en temps réel via React Context
+- Les activités créées dans Paramètres apparaissent immédiatement
+  dans la bibliothèque drag & drop
+- Chaque élève a un planning totalement indépendant des autres
+- Le Mode Remplacement est en lecture seule
+- Contenu fictif en français pour tous les placeholders
+- Rendu chaleureux et humain, jamais clinique ni corporate
+- Toutes les données restent locales (localStorage), aucune donnée élève
+  n'est envoyée sur un serveur
