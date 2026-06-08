@@ -30,8 +30,8 @@ export function TabEnseignante() {
       <ProfileCard
         role="Enseignante spécialisée TSA"
         emoji="👩‍🏫"
-        nom="Marie Lefèvre"
-        description="Enseignante spécialisée avec 12 ans d'expérience auprès d'élèves avec des troubles du spectre autistique. Formée aux approches TEACCH, ABA et PECS, elle croit profondément en le potentiel de chaque enfant et adapte son enseignement à chaque profil sensoriel et cognitif."
+        nom="Pauline Bocquillon"
+        description="Enseignante spécialisée avec 9 ans d'expérience auprès d'élèves et 1 an avec des troubles du spectre autistique. Formée aux approches TEACCH, ABA et PECS, elle croit profondément en le potentiel de chaque enfant et adapte son enseignement à chaque profil sensoriel et cognitif."
         extra={
           <div>
             <div className="tsa-section-title" style={{ fontSize: "0.9rem", marginTop: 16 }}>🎓 Formations & Certifications</div>
@@ -45,7 +45,7 @@ export function TabEnseignante() {
               "Chaque enfant progresse à son rythme. Mon rôle est de créer un environnement prévisible, rassurant, et stimulant — où chaque petite victoire est célébrée."
             </p>
             <div style={{ marginTop: 12, fontSize: "0.85rem" }}>
-              📧 <a href="mailto:m.lefevre@ecole-tsa.fr" style={{ color: "var(--tsa-sage)" }}>m.lefevre@ecole-tsa.fr</a>
+              📧 <a href="mailto:m.lefevre@ecole-tsa.fr" style={{ color: "var(--tsa-sage)" }}>Pau.boc@hotmail.fr</a>
             </div>
           </div>
         }
