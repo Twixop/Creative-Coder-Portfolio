@@ -49,7 +49,7 @@ export default function TabPlanning() {
         <div className="tsa-spacer" />
         <button className={`tsa-btn tsa-btn-sm ${vue === "globale" ? "tsa-btn-primary" : "tsa-btn-ghost"}`} onClick={() => setVue("globale")}>Vue globale</button>
         <button className={`tsa-btn tsa-btn-sm ${vue === "individuelle" ? "tsa-btn-primary" : "tsa-btn-ghost"}`} onClick={() => setVue("individuelle")}>Vue individuelle</button>
-        <button className="tsa-btn tsa-btn-sm tsa-btn-danger" onClick={() => { if (confirm("Effacer le planning du " + formatDateFR(planningDate) + " ?")) dispatch({ type: "RESET_PLANNING", date: planningDate }); }}>Réinitialiser</button>
+        <button className="tsa-btn tsa-btn-sm tsa-btn-danger" onClick={() => { if (confirm("Vider tout le planning du " + formatDateFR(planningDate) + " ? Cette action ne touche que ce jour.")) dispatch({ type: "RESET_PLANNING", date: planningDate }); }}>🗑️ Vider ce jour</button>
         <button className="tsa-btn tsa-btn-sm tsa-btn-secondary" onClick={() => setFullscreen(true)}>🖥️ Plein écran</button>
       </div>
 

@@ -41,8 +41,8 @@ const fallbackProjects: Project[] = [
     id: "fallback-4",
     name: "École TSA",
     description:
-      "Application de gestion pédagogique pour une classe d'élèves avec troubles du spectre autistique — planning, fiches élèves, humeurs, carnet de liaison.",
-    stack: ["React", "localStorage", "Recharts"],
+      "Application de gestion pédagogique pour une classe d'élèves avec troubles du spectre autistique — plannings journaliers multi-dates, fiches élèves, humeurs et carnet de liaison. Les données se synchronisent avec Airtable pour être sauvegardées et partagées entre plusieurs ordinateurs.",
+    stack: ["React", "Airtable", "Recharts", "jsPDF"],
     demoUrl: "https://example.com",
     codeUrl: "https://github.com/example",
   },

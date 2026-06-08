@@ -29,13 +29,12 @@ const TABS = [
 ];
 
 const TSA_PASSWORD = "Popol090687";
-const SESSION_KEY = "tsa_session_ok";
 const API_BASE = import.meta.env.BASE_URL + "api";
 
 type SyncStatus = "idle" | "saving" | "loading" | "ok" | "error";
 
 function PasswordGate({ children }: { children: React.ReactNode }) {
-  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem(SESSION_KEY) === "1");
+  const [unlocked, setUnlocked] = useState(false);
   const [input, setInput] = useState("");
   const [error, setError] = useState(false);
 
@@ -44,7 +43,6 @@ function PasswordGate({ children }: { children: React.ReactNode }) {
   function tryUnlock(e: React.FormEvent) {
     e.preventDefault();
     if (input === TSA_PASSWORD) {
-      sessionStorage.setItem(SESSION_KEY, "1");
       setUnlocked(true);
     } else {
       setError(true);
