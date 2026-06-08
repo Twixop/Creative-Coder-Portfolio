@@ -57,4 +57,4 @@ externalPort = 3003
 AIRTABLE_BASE_ID = "appe7LRwYtNkRQwuU"
 AIRTABLE_TABLE_NAME = "Projet"
 AIRTABLE_CHATBOT_TABLE_NAME = "Chatbot"
-ALERT_EMAIL_TO = "twix2110@hotmail.com"
+ALERT_EMAIL_TO = "twix2110@gmail.com"

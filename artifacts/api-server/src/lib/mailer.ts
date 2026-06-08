@@ -1,3 +1,4 @@
+import { Resend } from "resend";
 import { logger } from "./logger";
 
 export async function sendChatbotAlert(params: {
@@ -13,6 +14,8 @@ export async function sendChatbotAlert(params: {
     logger.debug("Email alert skipped — RESEND_API_KEY / ALERT_EMAIL_TO not configured");
     return;
   }
+
+  const resend = new Resend(apiKey);
 
   const scoreHtml = params.score !== null
     ? `<p><strong>Score :</strong> <span style="color:#8a4dff;font-size:1.4em">${params.score}/100</span></p>`
@@ -31,28 +34,16 @@ export async function sendChatbotAlert(params: {
     </div>
   `;
 
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "Recrut'IA <onboarding@resend.dev>",
-        to: [to],
-        subject: `🤖 Candidat reçu : ${params.candidat}${params.score !== null ? ` — Score ${params.score}/100` : ""}`,
-        html,
-      }),
-    });
+  const { error } = await resend.emails.send({
+    from: "onboarding@resend.dev",
+    to,
+    subject: `🤖 Candidat reçu : ${params.candidat}${params.score !== null ? ` — Score ${params.score}/100` : ""}`,
+    html,
+  });
 
-    if (res.ok) {
-      logger.info({ to, candidat: params.candidat }, "Chatbot alert email sent via Resend");
-    } else {
-      const err = await res.text();
-      logger.warn({ status: res.status, err }, "Resend email failed");
-    }
-  } catch (err) {
-    logger.warn({ err }, "Failed to send chatbot alert email");
+  if (error) {
+    logger.warn({ error }, "Resend email failed");
+  } else {
+    logger.info({ to, candidat: params.candidat }, "Chatbot alert email sent via Resend");
   }
 }
