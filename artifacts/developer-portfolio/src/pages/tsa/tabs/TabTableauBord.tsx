@@ -167,7 +167,7 @@ export default function TabTableauBord() {
               padding: "6px 14px", borderRadius: 50, cursor: "pointer",
               background: absentsAujourdhui[i] ? "#fed7d7" : "var(--tsa-sage-light)",
               border: "2px solid " + (absentsAujourdhui[i] ? "#fc8181" : "var(--tsa-border)"),
-              fontWeight: 700, fontSize: "0.82rem"
+              fontWeight: 700, fontSize: "0.82rem", color: "#2d3748"
             }}>
               <input type="checkbox" checked={absentsAujourdhui[i]}
                 onChange={e => dispatch({ type: "SET_ABSENCE", index: i, date: today, absent: e.target.checked })}
