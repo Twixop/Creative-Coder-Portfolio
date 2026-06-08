@@ -38,6 +38,7 @@ export type ProfilEleve = {
   strategies: string[];
   notes: string;
   objectifs: Objectif[];
+  anniversaire: string;
 };
 
 export type HumeurEntry = { date: string; humeur: Humeur; note: string };
@@ -111,6 +112,7 @@ const defaultProfil = (): ProfilEleve => ({
   strategies: [],
   notes: "",
   objectifs: [],
+  anniversaire: "",
 });
 
 const initialState: TsaState = {

@@ -19,7 +19,7 @@ const TABS = [
   { id: "planning", label: "📅 Planning Journalier", component: TabPlanning },
   { id: "eleves", label: "🧒 Fiches Élèves", component: TabEleves },
   { id: "enseignante", label: "👩‍🏫 Enseignante", component: TabEnseignante },
-  { id: "aesh", label: "🤝 AESH", component: TabAESH },
+  { id: "aesh", label: "🤝 Personnel d'accompagnement", component: TabAESH },
   { id: "calendrier", label: "🗓️ Calendrier", component: TabCalendrier },
   { id: "projet-annuel", label: "🎯 Projet Annuel", component: TabProjetAnnuel },
   { id: "remplacement", label: "🔄 Remplacement", component: TabRemplacement },

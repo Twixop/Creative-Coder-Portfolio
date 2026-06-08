@@ -49,7 +49,22 @@ function ProfilView({ eleveIndex, onBack }: { eleveIndex: number; onBack: () => 
         <div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
           <div className="eleve-avatar" style={{ width: 72, height: 72, fontSize: "2rem" }}>👤</div>
           <div style={{ flex: 1 }}>
-            <h2 style={{ margin: "0 0 8px", fontSize: "1.4rem" }}>{nom}</h2>
+            <h2 style={{ margin: "0 0 4px", fontSize: "1.4rem" }}>{nom}</h2>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--tsa-muted)" }}>🎂 Anniversaire</label>
+              <input
+                type="date"
+                className="tsa-input"
+                value={profil.anniversaire ?? ""}
+                onChange={e => setProfil({ anniversaire: e.target.value })}
+                style={{ fontSize: "0.85rem", padding: "4px 10px", width: "auto" }}
+              />
+              {profil.anniversaire && (
+                <span style={{ fontSize: "0.82rem", color: "var(--tsa-sage)", fontWeight: 700 }}>
+                  {new Date(profil.anniversaire).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}
+                </span>
+              )}
+            </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
               {(["verbal", "semi-verbal", "non-verbal"] as NiveauComm[]).map(lv => (
                 <button key={lv} onClick={() => setProfil({ niveauComm: lv })}
@@ -204,17 +219,35 @@ export default function TabEleves() {
 
   if (selected !== null) return <ProfilView eleveIndex={selected} onBack={() => setSelected(null)} />;
 
+  const today = new Date().toISOString().split("T")[0];
+
   return (
     <div>
       <h2 className="tsa-section-title">🧒 Fiches Élèves</h2>
       <div className="eleve-card-grid">
-        {state.eleves.map((nom, i) => (
-          <div key={i} className="eleve-card" onClick={() => setSelected(i)}>
-            <div className="eleve-avatar">👤</div>
-            <div style={{ fontWeight: 800, fontSize: "0.95rem" }}>{nom}</div>
-            <div style={{ fontSize: "0.75rem", color: "var(--tsa-muted)", marginTop: 4 }}>Voir la fiche</div>
-          </div>
-        ))}
+        {state.eleves.map((nom, i) => {
+          const profil = state.profils[i];
+          const anniv = profil?.anniversaire;
+          const isToday = anniv && anniv.slice(5) === today.slice(5);
+          return (
+            <div key={i} className="eleve-card" onClick={() => setSelected(i)}
+              style={{ position: "relative" }}>
+              {isToday && (
+                <div style={{ position: "absolute", top: 8, right: 8, fontSize: "1.2rem" }} title="Anniversaire aujourd'hui !">🎂</div>
+              )}
+              <div className="eleve-avatar">👤</div>
+              <div style={{ fontWeight: 800, fontSize: "0.95rem" }}>{nom}</div>
+              {anniv ? (
+                <div style={{ fontSize: "0.75rem", color: isToday ? "#e53e3e" : "var(--tsa-muted)", marginTop: 4, fontWeight: isToday ? 700 : 400 }}>
+                  🎂 {new Date(anniv).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}
+                  {isToday && " — Aujourd'hui !"}
+                </div>
+              ) : (
+                <div style={{ fontSize: "0.75rem", color: "var(--tsa-muted)", marginTop: 4 }}>Voir la fiche</div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
