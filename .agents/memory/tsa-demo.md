@@ -9,6 +9,10 @@ description: Durable quirks/decisions for the special-needs French school-manage
   **Why:** wasted time chasing these as if they were real errors.
   **How to apply:** when reviewing this artifact's logs, ignore Fast-Refresh-incompatible warnings and stale syntax errors from earlier intermediate edits; verify with typecheck.
 
+- **Access control is server-side, not a client password.** The old hardcoded client constant was removed. Auth lives in api-server `lib/tsaAuth.ts`: `POST /api/tsa/login` checks the password (constant-time) against the `TSA_PASSWORD` secret, issues an HMAC-signed httpOnly `tsa_session` cookie (signed with `SESSION_SECRET`, 12h TTL, path `/api/tsa`, `secure` only in prod). `GET/POST /api/tsa/state` are behind `requireTsaAuth`; `GET /api/tsa/session` reports `{authenticated, configured}`; `POST /api/tsa/logout` clears the cookie. Frontend `PasswordGate` calls these and all TSA fetches use `credentials:"include"`. Fail-closed: missing `TSA_PASSWORD`/`SESSION_SECRET` → login 503 + state stays 401.
+  **Why:** the demo holds sensitive minors'/family data; a client-shipped password is no protection.
+  **How to apply:** never reintroduce a client-side password; keep new TSA data routes behind `requireTsaAuth`. Login limiter is in-memory (10/15min per IP) — move to shared storage if ever multi-instance.
+
 - **Persistence is a single JSON blob.** Whole `TsaState` is JSON-stringified to localStorage (`tsa_app_state`) and POSTed to one Airtable field. Student photos are base64 JPEG data URLs (resized ~200px) stored inline in this blob — keep photos small and wrap the localStorage write in try/catch (quota). Airtable remains the reliable source if localStorage quota is exceeded.
 
 - **Carnet-de-liaison is emailed via the user's own mail client (mailto:), not a backend.** The user has no domain, so server-side Resend sending was removed. `TabCarnet` `openMailClient()` downloads the jsPDF carnet then opens a prefilled `mailto:` (recipient = profile `emailParent`, subject + body). Attachments cannot be auto-added via mailto (browser security) — the body tells the teacher to drag the downloaded PDF in.
