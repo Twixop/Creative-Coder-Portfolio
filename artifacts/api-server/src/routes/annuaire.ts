@@ -98,8 +98,21 @@ function mapRecord(rec: AirtableTool): Tool {
   };
 }
 
-/* GET /api/annuaire — liste tous les outils */
+/* GET /api/annuaire — liste tous les outils (admin protégé par ADMIN_SECRET) */
 router.get("/annuaire", async (req, res) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  if (!adminSecret) {
+    res.status(503).json({ error: "Annuaire non disponible : ADMIN_SECRET non configuré." });
+    return;
+  }
+  const provided =
+    (req.headers["x-admin-secret"] as string | undefined) ??
+    req.headers.authorization?.replace(/^Bearer\s+/i, "");
+  if (provided !== adminSecret) {
+    res.status(401).json({ error: "Accès non autorisé. Secret admin incorrect." });
+    return;
+  }
+
   const token = process.env.AIRTABLE_TOKEN_V2 || process.env.AIRTABLE_TOKEN;
   if (!token) {
     res.json({ tools: SAMPLE_TOOLS, source: "sample" });
@@ -127,16 +140,17 @@ router.get("/annuaire", async (req, res) => {
 
 /* POST /api/annuaire — ajoute un outil (admin protégé par ADMIN_SECRET) */
 router.post("/annuaire", async (req, res) => {
-  /* Vérification du secret admin si la variable est configurée */
   const adminSecret = process.env.ADMIN_SECRET;
-  if (adminSecret) {
-    const provided =
-      (req.headers["x-admin-secret"] as string | undefined) ??
-      req.headers.authorization?.replace(/^Bearer\s+/i, "");
-    if (provided !== adminSecret) {
-      res.status(401).json({ error: "Accès non autorisé. Secret admin incorrect." });
-      return;
-    }
+  if (!adminSecret) {
+    res.status(503).json({ error: "Annuaire non disponible : ADMIN_SECRET non configuré." });
+    return;
+  }
+  const provided =
+    (req.headers["x-admin-secret"] as string | undefined) ??
+    req.headers.authorization?.replace(/^Bearer\s+/i, "");
+  if (provided !== adminSecret) {
+    res.status(401).json({ error: "Accès non autorisé. Secret admin incorrect." });
+    return;
   }
 
   const token = process.env.AIRTABLE_TOKEN_V2 || process.env.AIRTABLE_TOKEN;
