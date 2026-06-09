@@ -33,26 +33,58 @@ const TABS = [
   { id: "parametres", label: "⚙️ Paramètres", component: TabParametres },
 ];
 
-const TSA_PASSWORD = "Popol090687";
 const API_BASE = import.meta.env.BASE_URL + "api";
 
 type SyncStatus = "idle" | "saving" | "loading" | "ok" | "error";
 
 function PasswordGate({ children }: { children: React.ReactNode }) {
   const [unlocked, setUnlocked] = useState(false);
+  const [checking, setChecking] = useState(true);
   const [input, setInput] = useState("");
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/tsa/session`, { credentials: "include" });
+        const data = await res.json() as { authenticated?: boolean };
+        if (!cancelled && data.authenticated) setUnlocked(true);
+      } catch {
+        // réseau indisponible — on reste sur l'écran de connexion
+      } finally {
+        if (!cancelled) setChecking(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   if (unlocked) return <>{children}</>;
 
-  function tryUnlock(e: React.FormEvent) {
+  async function tryUnlock(e: React.FormEvent) {
     e.preventDefault();
-    if (input === TSA_PASSWORD) {
-      setUnlocked(true);
-    } else {
-      setError(true);
-      setInput("");
-      setTimeout(() => setError(false), 2000);
+    if (submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE}/tsa/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ password: input }),
+      });
+      const data = await res.json().catch(() => ({})) as { ok?: boolean; error?: string };
+      if (res.ok && data.ok) {
+        setUnlocked(true);
+      } else {
+        setError(data.error ?? "Mot de passe incorrect");
+        setInput("");
+      }
+    } catch {
+      setError("Connexion au serveur impossible");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -63,25 +95,29 @@ function PasswordGate({ children }: { children: React.ReactNode }) {
         <div style={{ fontSize: "3rem", marginBottom: 12 }}>🌱</div>
         <h1 style={{ fontSize: "1.5rem", fontWeight: 900, color: "var(--tsa-sage)", margin: "0 0 6px" }}>École TSA</h1>
         <p style={{ color: "var(--tsa-muted)", fontSize: "0.9rem", marginBottom: 28 }}>Espace pédagogique — accès restreint</p>
-        <form onSubmit={tryUnlock}>
-          <input
-            className="tsa-input"
-            type="password"
-            placeholder="Mot de passe"
-            value={input}
-            autoFocus
-            onChange={e => setInput(e.target.value)}
-            style={{
-              width: "100%", marginBottom: 12, textAlign: "center",
-              border: error ? "2px solid #e53e3e" : undefined,
-              background: error ? "#fff5f5" : undefined,
-            }}
-          />
-          {error && <p style={{ color: "#e53e3e", fontSize: "0.82rem", margin: "0 0 10px", fontWeight: 700 }}>Mot de passe incorrect</p>}
-          <button type="submit" className="tsa-btn tsa-btn-primary" style={{ width: "100%" }}>
-            Accéder →
-          </button>
-        </form>
+        {checking ? (
+          <p style={{ color: "var(--tsa-muted)", fontSize: "0.9rem" }}>Vérification…</p>
+        ) : (
+          <form onSubmit={tryUnlock}>
+            <input
+              className="tsa-input"
+              type="password"
+              placeholder="Mot de passe"
+              value={input}
+              autoFocus
+              onChange={e => setInput(e.target.value)}
+              style={{
+                width: "100%", marginBottom: 12, textAlign: "center",
+                border: error ? "2px solid #e53e3e" : undefined,
+                background: error ? "#fff5f5" : undefined,
+              }}
+            />
+            {error && <p style={{ color: "#e53e3e", fontSize: "0.82rem", margin: "0 0 10px", fontWeight: 700 }}>{error}</p>}
+            <button type="submit" className="tsa-btn tsa-btn-primary" style={{ width: "100%" }} disabled={submitting}>
+              {submitting ? "…" : "Accéder →"}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
@@ -118,6 +154,7 @@ function SyncBar() {
       const res = await fetch(`${API_BASE}/tsa/state`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ state: stateRef.current, recordId }),
       });
       const data = await res.json() as { ok?: boolean; recordId?: string; error?: string };
@@ -136,7 +173,7 @@ function SyncBar() {
   const load = useCallback(async () => {
     setStatus("loading");
     try {
-      const res = await fetch(`${API_BASE}/tsa/state`);
+      const res = await fetch(`${API_BASE}/tsa/state`, { credentials: "include" });
       const data = await res.json() as { state?: unknown; recordId?: string; error?: string };
       if (!res.ok || !data.state) throw new Error(data.error ?? "Aucune donnée");
       dispatch({ type: "LOAD", state: data.state as Parameters<typeof dispatch>[0] extends { state: infer S } ? S : never });

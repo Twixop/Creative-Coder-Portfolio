@@ -1,4 +1,14 @@
 import { Router, type IRouter } from "express";
+import {
+  clearSessionCookie,
+  isAuthConfigured,
+  isAuthenticated,
+  loginRateLimited,
+  requireTsaAuth,
+  resetLoginAttempts,
+  setSessionCookie,
+  verifyPassword,
+} from "../lib/tsaAuth";
 
 const router: IRouter = Router();
 const defaultBaseId = "appe7LRwYtNkRQwuU";
@@ -35,7 +45,44 @@ function makeLabel(): string {
   return `État École TSA — sauvegarde du ${now}`;
 }
 
-router.get("/tsa/state", async (req, res) => {
+router.get("/tsa/session", (req, res) => {
+  res.json({ authenticated: isAuthenticated(req), configured: isAuthConfigured() });
+});
+
+router.post("/tsa/login", (req, res) => {
+  const ip = req.ip ?? "unknown";
+  if (loginRateLimited(ip)) {
+    res.status(429).json({ error: "Trop de tentatives. Réessayez plus tard." });
+    return;
+  }
+  if (!isAuthConfigured()) {
+    req.log.error("TSA login attempted but TSA_PASSWORD/SESSION_SECRET not configured");
+    res.status(503).json({ error: "Authentification non configurée sur le serveur" });
+    return;
+  }
+  const { password } = req.body as { password?: unknown };
+  if (typeof password !== "string" || password.length === 0 || password.length > 200) {
+    res.status(400).json({ error: "Mot de passe requis" });
+    return;
+  }
+  if (!verifyPassword(password)) {
+    res.status(401).json({ error: "Mot de passe incorrect" });
+    return;
+  }
+  resetLoginAttempts(ip);
+  if (!setSessionCookie(res)) {
+    res.status(503).json({ error: "Authentification non configurée sur le serveur" });
+    return;
+  }
+  res.json({ ok: true });
+});
+
+router.post("/tsa/logout", (_req, res) => {
+  clearSessionCookie(res);
+  res.json({ ok: true });
+});
+
+router.get("/tsa/state", requireTsaAuth, async (req, res) => {
   const token = process.env.AIRTABLE_TOKEN_V2 || process.env.AIRTABLE_TOKEN;
   const baseId = process.env.AIRTABLE_BASE_ID || defaultBaseId;
   const table = process.env.AIRTABLE_TSA_TABLE_NAME || defaultTableName;
@@ -52,7 +99,7 @@ router.get("/tsa/state", async (req, res) => {
   }
 });
 
-router.post("/tsa/state", async (req, res) => {
+router.post("/tsa/state", requireTsaAuth, async (req, res) => {
   const token = process.env.AIRTABLE_TOKEN_V2 || process.env.AIRTABLE_TOKEN;
   const baseId = process.env.AIRTABLE_BASE_ID || defaultBaseId;
   const table = process.env.AIRTABLE_TSA_TABLE_NAME || defaultTableName;
