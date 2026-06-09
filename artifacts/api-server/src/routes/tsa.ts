@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { sendCarnetLiaison } from "../lib/mailer";
 
 const router: IRouter = Router();
 const defaultBaseId = "appe7LRwYtNkRQwuU";
@@ -131,6 +132,68 @@ router.post("/tsa/state", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "TSA save failed");
     res.status(500).json({ error: "Impossible de sauvegarder les données TSA" });
+  }
+});
+
+const carnetRateLimit = new Map<string, { count: number; resetAt: number }>();
+const RATE_WINDOW_MS = 60 * 60 * 1000;
+const RATE_MAX = 20;
+
+function rateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = carnetRateLimit.get(ip);
+  if (!entry || now > entry.resetAt) {
+    carnetRateLimit.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > RATE_MAX;
+}
+
+router.post("/tsa/send-carnet", async (req, res) => {
+  const ip = req.ip ?? "unknown";
+  if (rateLimited(ip)) {
+    res.status(429).json({ error: "Trop d'envois. Réessayez plus tard." });
+    return;
+  }
+
+  const { to, eleve, semaine, message, pdfBase64 } = req.body as {
+    to?: string;
+    eleve?: string;
+    semaine?: string;
+    message?: string;
+    pdfBase64?: string;
+  };
+
+  if (!to || typeof to !== "string" || to.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+    res.status(400).json({ error: "Adresse email du parent invalide" });
+    return;
+  }
+  if (!eleve || typeof eleve !== "string" || eleve.length > 100 ||
+      !semaine || typeof semaine !== "string" || semaine.length > 20 ||
+      !pdfBase64 || typeof pdfBase64 !== "string") {
+    res.status(400).json({ error: "Champs manquants ou invalides (élève, semaine ou PDF)" });
+    return;
+  }
+  if (typeof message === "string" && message.length > 5000) {
+    res.status(400).json({ error: "Message trop long" });
+    return;
+  }
+  if (!/^[A-Za-z0-9+/=\r\n]+$/.test(pdfBase64) || pdfBase64.length > 3_000_000) {
+    res.status(400).json({ error: "PDF invalide ou trop volumineux" });
+    return;
+  }
+
+  try {
+    const result = await sendCarnetLiaison({ to, eleve, semaine, message, pdfBase64 });
+    if (!result.ok) {
+      res.status(502).json({ error: result.error ?? "Envoi échoué" });
+      return;
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    req.log.error({ err }, "TSA send-carnet failed");
+    res.status(500).json({ error: "Impossible d'envoyer le carnet par email" });
   }
 });
 

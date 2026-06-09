@@ -44,6 +44,7 @@ export type ProfilEleve = {
   anniversaire: string;
   avatar?: string;
   photo?: string;
+  emailParent?: string;
 };
 
 export type HumeurEntry = { date: string; humeur: Humeur; note: string };

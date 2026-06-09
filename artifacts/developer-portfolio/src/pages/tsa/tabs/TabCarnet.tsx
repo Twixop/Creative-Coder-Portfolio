@@ -4,7 +4,7 @@ import { jsPDF } from "jspdf";
 
 type CarnetData = { semaine: string; activites: string; positifs: string; atravailler: string; message: string };
 
-function generateCarnetPdf(eleve: string, carnet: CarnetData) {
+function buildCarnetDoc(eleve: string, carnet: CarnetData): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = 210;
   const margin = 18;
@@ -58,20 +58,68 @@ function generateCarnetPdf(eleve: string, carnet: CarnetData) {
   doc.text("Signature de l'enseignant(e) :", margin, y);
   doc.text("Signature des parents :", W / 2 + 6, y);
 
-  doc.save(`carnet-${eleve.replace(/\s+/g, "-")}-${carnet.semaine}.pdf`);
+  return doc;
 }
+
+function carnetFilename(eleve: string, semaine: string) {
+  return `carnet-${eleve.replace(/\s+/g, "-")}-${semaine}.pdf`;
+}
+
+function downloadCarnetPdf(eleve: string, carnet: CarnetData) {
+  buildCarnetDoc(eleve, carnet).save(carnetFilename(eleve, carnet.semaine));
+}
+
+function carnetPdfBase64(eleve: string, carnet: CarnetData): string {
+  const uri = buildCarnetDoc(eleve, carnet).output("datauristring");
+  return uri.split(",")[1] ?? "";
+}
+
+const API_BASE = import.meta.env.BASE_URL + "api";
 
 export default function TabCarnet() {
   const { state, dispatch } = useTsa();
   const [eleveIdx, setEleveIdx] = useState(0);
   const [semaine, setSemaine] = useState(currentWeek());
+  const [sending, setSending] = useState(false);
+  const [mailStatus, setMailStatus] = useState<{ ok: boolean; msg: string } | null>(null);
 
   const carnet = (state.carnets[eleveIdx] ?? []).find(c => c.semaine === semaine) ?? {
     semaine, activites: "", positifs: "", atravailler: "", message: ""
   };
 
+  const emailParent = state.profils[eleveIdx]?.emailParent?.trim() ?? "";
+
   function update(field: string, val: string) {
     dispatch({ type: "SET_CARNET", eleveIndex: eleveIdx, semaine, entry: { [field]: val } });
+  }
+
+  async function sendByEmail() {
+    const eleve = state.eleves[eleveIdx];
+    setSending(true);
+    setMailStatus(null);
+    try {
+      const res = await fetch(`${API_BASE}/tsa/send-carnet`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: emailParent,
+          eleve,
+          semaine,
+          message: carnet.message,
+          pdfBase64: carnetPdfBase64(eleve, carnet),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setMailStatus({ ok: true, msg: `Carnet envoyé à ${emailParent}` });
+      } else {
+        setMailStatus({ ok: false, msg: data.error ?? "Échec de l'envoi" });
+      }
+    } catch {
+      setMailStatus({ ok: false, msg: "Erreur réseau lors de l'envoi" });
+    } finally {
+      setSending(false);
+    }
   }
 
   const historique = (state.carnets[eleveIdx] ?? [])
@@ -129,9 +177,26 @@ export default function TabCarnet() {
         </div>
       </div>
 
-      <button className="tsa-btn tsa-btn-secondary" onClick={() => generateCarnetPdf(state.eleves[eleveIdx], carnet)}>
-        🖨️ Générer le carnet PDF
-      </button>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <button className="tsa-btn tsa-btn-secondary" onClick={() => downloadCarnetPdf(state.eleves[eleveIdx], carnet)}>
+          🖨️ Télécharger le carnet PDF
+        </button>
+        <button className="tsa-btn tsa-btn-primary" disabled={!emailParent || sending} onClick={sendByEmail}
+          title={emailParent ? `Envoyer à ${emailParent}` : "Renseignez l'email des parents dans la fiche élève"}>
+          {sending ? "⏳ Envoi…" : "✉️ Envoyer aux parents par mail"}
+        </button>
+      </div>
+      {!emailParent && (
+        <p style={{ color: "var(--tsa-muted)", fontSize: "0.78rem", margin: "8px 0 0" }}>
+          ℹ️ Ajoutez l'email des parents dans la fiche de l'élève pour activer l'envoi par mail.
+        </p>
+      )}
+      {mailStatus && (
+        <p style={{ fontSize: "0.85rem", fontWeight: 700, margin: "8px 0 0",
+          color: mailStatus.ok ? "var(--tsa-sage)" : "#e53e3e" }}>
+          {mailStatus.ok ? "✅ " : "⚠️ "}{mailStatus.msg}
+        </p>
+      )}
 
       {historique.length > 0 && (
         <div className="tsa-card" style={{ marginTop: 24 }}>

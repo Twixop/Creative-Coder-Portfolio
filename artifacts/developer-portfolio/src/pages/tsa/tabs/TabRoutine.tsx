@@ -94,8 +94,8 @@ export default function TabRoutine() {
         {current ? (
           <>
             <div style={{ fontSize: big ? "6rem" : "3rem", lineHeight: 1 }}>{current.activite.emoji}</div>
-            <div style={{ fontSize: big ? "2rem" : "1.1rem", fontWeight: 900, color: current.activite.couleur, marginTop: 10 }}>{current.activite.nom}</div>
-            <div style={{ fontSize: big ? "1rem" : "0.8rem", color: "var(--tsa-muted)", marginTop: 4 }}>{current.creneau}</div>
+            <div style={{ fontSize: big ? "2rem" : "1.1rem", fontWeight: 900, color: current.activite.couleur, marginTop: 10, overflowWrap: "anywhere", hyphens: "auto" }}>{current.activite.nom}</div>
+            <div style={{ fontSize: big ? "1rem" : "0.8rem", color: "var(--tsa-muted)", marginTop: 4, overflowWrap: "anywhere" }}>{current.creneau}</div>
           </>
         ) : <div style={{ color: "var(--tsa-muted)", padding: 20 }}>Aucune activité planifiée</div>}
       </div>
@@ -108,8 +108,8 @@ export default function TabRoutine() {
         {next ? (
           <>
             <div style={{ fontSize: big ? "4.5rem" : "2.4rem", lineHeight: 1 }}>{next.activite.emoji}</div>
-            <div style={{ fontSize: big ? "1.5rem" : "1rem", fontWeight: 800, color: next.activite.couleur, marginTop: 10 }}>{next.activite.nom}</div>
-            <div style={{ fontSize: big ? "1rem" : "0.8rem", color: "var(--tsa-muted)", marginTop: 4 }}>{next.creneau}</div>
+            <div style={{ fontSize: big ? "1.5rem" : "1rem", fontWeight: 800, color: next.activite.couleur, marginTop: 10, overflowWrap: "anywhere", hyphens: "auto" }}>{next.activite.nom}</div>
+            <div style={{ fontSize: big ? "1rem" : "0.8rem", color: "var(--tsa-muted)", marginTop: 4, overflowWrap: "anywhere" }}>{next.creneau}</div>
           </>
         ) : <div style={{ color: "var(--tsa-muted)", padding: 20 }}>🎉 Dernière activité</div>}
       </div>

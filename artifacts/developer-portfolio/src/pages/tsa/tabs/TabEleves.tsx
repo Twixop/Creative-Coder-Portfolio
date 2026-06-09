@@ -145,6 +145,17 @@ function ProfilView({ eleveIndex, onBack }: { eleveIndex: number; onBack: () => 
                 </span>
               )}
             </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+              <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--tsa-muted)" }}>✉️ Email parents</label>
+              <input
+                type="email"
+                className="tsa-input"
+                value={profil.emailParent ?? ""}
+                onChange={e => setProfil({ emailParent: e.target.value })}
+                placeholder="parent@exemple.fr"
+                style={{ fontSize: "0.85rem", padding: "4px 10px", maxWidth: 240 }}
+              />
+            </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
               {(["verbal", "semi-verbal", "non-verbal"] as NiveauComm[]).map(lv => (
                 <button key={lv} onClick={() => setProfil({ niveauComm: lv })}
