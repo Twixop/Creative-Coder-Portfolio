@@ -1,8 +1,15 @@
-import React, { useState } from "react";
-import { useTsa, DEFAULT_ACTIVITES, Activite } from "../TsaContext";
+import React, { useState, useRef } from "react";
+import { useTsa, DEFAULT_ACTIVITES, Activite, AppSettings, TsaState } from "../TsaContext";
 
 const EMOJIS = ["🎨","📖","🧘","🏃","🎵","🧩","🍽️","🌿","💬","🖐️","🔢","✏️","🏊","🎭","🎲","🌱","🔬","💻","🎤","🎸"];
 const COLORS = ["#f97316","#3b82f6","#8b5cf6","#22c55e","#ec4899","#eab308","#a16207","#166534","#0ea5e9","#fb923c","#ef4444","#64748b","#06b6d4","#d946ef","#84cc16"];
+
+const A11Y_OPTIONS: { key: keyof AppSettings; label: string; desc: string; emoji: string }[] = [
+  { key: "largeText", label: "Gros texte", desc: "Agrandit le texte de l'application", emoji: "🔠" },
+  { key: "highContrast", label: "Contraste élevé", desc: "Couleurs plus contrastées pour une meilleure lisibilité", emoji: "🌗" },
+  { key: "reduceMotion", label: "Réduire les animations", desc: "Désactive les transitions et animations", emoji: "🐢" },
+  { key: "autoSave", label: "Sauvegarde automatique", desc: "Enregistre vers Airtable après chaque modification", emoji: "💾" },
+];
 
 export default function TabParametres() {
   const { state, dispatch } = useTsa();
@@ -10,11 +17,45 @@ export default function TabParametres() {
   const [saved, setSaved] = useState(false);
   const [form, setForm] = useState({ nom: "", emoji: "🎨", couleur: "#f97316" });
   const [showForm, setShowForm] = useState(false);
+  const [importMsg, setImportMsg] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   function saveEleves() {
     dispatch({ type: "SET_ELEVES", eleves: eleveDraft });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  }
+
+  function exportJSON() {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ecole-tsa-sauvegarde-${new Date().toISOString().split("T")[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importJSON(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result)) as TsaState;
+        if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.eleves)) {
+          throw new Error("format");
+        }
+        dispatch({ type: "LOAD", state: parsed });
+        setEleveDraft(parsed.eleves);
+        setImportMsg("✓ Données importées avec succès");
+      } catch {
+        setImportMsg("✗ Fichier invalide");
+      }
+      setTimeout(() => setImportMsg(null), 4000);
+      if (fileRef.current) fileRef.current.value = "";
+    };
+    reader.readAsText(file);
   }
 
   function addActivite() {
@@ -30,6 +71,64 @@ export default function TabParametres() {
   return (
     <div>
       <h2 className="tsa-section-title">⚙️ Paramètres</h2>
+
+      {/* Accessibilité */}
+      <div className="tsa-card" style={{ marginBottom: 24 }}>
+        <div className="tsa-section-title" style={{ margin: "0 0 4px" }}>♿ Accessibilité & confort</div>
+        <p style={{ color: "var(--tsa-muted)", fontSize: "0.82rem", margin: "0 0 14px" }}>
+          Adapte l'affichage et le comportement de l'application.
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 10 }}>
+          {A11Y_OPTIONS.map(opt => {
+            const on = state.settings[opt.key];
+            return (
+              <button
+                key={opt.key}
+                onClick={() => dispatch({ type: "SET_SETTINGS", settings: { [opt.key]: !on } })}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10, textAlign: "left", cursor: "pointer",
+                  padding: "12px 14px", borderRadius: 12,
+                  background: on ? "var(--tsa-sage-light)" : "var(--tsa-warm)",
+                  border: `2px solid ${on ? "var(--tsa-sage)" : "var(--tsa-border)"}`,
+                }}>
+                <span style={{ fontSize: "1.5rem" }}>{opt.emoji}</span>
+                <span style={{ flex: 1 }}>
+                  <span style={{ display: "block", fontWeight: 800, fontSize: "0.88rem", color: "var(--tsa-text)" }}>{opt.label}</span>
+                  <span style={{ display: "block", fontSize: "0.74rem", color: "var(--tsa-muted)" }}>{opt.desc}</span>
+                </span>
+                <span style={{
+                  width: 42, height: 24, borderRadius: 50, flexShrink: 0, position: "relative",
+                  background: on ? "var(--tsa-sage)" : "var(--tsa-border)", transition: "background .2s",
+                }}>
+                  <span style={{
+                    position: "absolute", top: 2, left: on ? 20 : 2, width: 20, height: 20, borderRadius: "50%",
+                    background: "white", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.3)",
+                  }} />
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Sauvegarde des données */}
+      <div className="tsa-card" style={{ marginBottom: 24 }}>
+        <div className="tsa-section-title" style={{ margin: "0 0 4px" }}>🗂️ Sauvegarde & restauration</div>
+        <p style={{ color: "var(--tsa-muted)", fontSize: "0.82rem", margin: "0 0 14px" }}>
+          Exporte toutes les données dans un fichier (sauvegarde de secours), ou restaure depuis un fichier.
+        </p>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <button className="tsa-btn tsa-btn-secondary" onClick={exportJSON}>⬇️ Exporter (JSON)</button>
+          <button className="tsa-btn tsa-btn-ghost" onClick={() => fileRef.current?.click()}>⬆️ Importer un fichier</button>
+          <input ref={fileRef} type="file" accept="application/json,.json" onChange={importJSON} style={{ display: "none" }} />
+          {importMsg && (
+            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: importMsg.startsWith("✓") ? "#22c55e" : "#e53e3e" }}>{importMsg}</span>
+          )}
+        </div>
+        <p style={{ color: "var(--tsa-muted)", fontSize: "0.74rem", margin: "12px 0 0" }}>
+          ⚠️ L'import remplace toutes les données actuelles. Pense à exporter d'abord.
+        </p>
+      </div>
 
       {/* Élèves */}
       <div className="tsa-card" style={{ marginBottom: 24 }}>

@@ -116,7 +116,8 @@ export default function TabPlanning() {
         {/* Table */}
         <div className="planning-table-wrap">
           {vue === "globale" ? (
-            <table className="planning-table">
+           <>
+            <table className="planning-table planning-desktop-only">
               <thead>
                 <tr>
                   <th>Horaire</th>
@@ -153,6 +154,40 @@ export default function TabPlanning() {
                 ))}
               </tbody>
             </table>
+
+            {/* Vue cartes (mobile uniquement) */}
+            <div className="planning-mobile-only" style={{ padding: 12, display: "flex", flexDirection: "column", gap: 14 }}>
+              {state.eleves.map((nom, i) => {
+                const absent = absentsJour[i];
+                return (
+                  <div key={i} className="tsa-card" style={{ padding: 14, opacity: absent ? 0.55 : 1 }}>
+                    <div style={{ fontWeight: 900, fontSize: "1rem", marginBottom: 10, display: "flex", justifyContent: "space-between" }}>
+                      <span>{nom}</span>
+                      {absent && <span style={{ color: "#e53e3e", fontSize: "0.8rem" }}>Absent(e)</span>}
+                    </div>
+                    {!absent && CRENEAUX.map(creneau => {
+                      const act = dayPlanning[i]?.[creneau];
+                      return (
+                        <div key={creneau} style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 5,
+                          padding: "7px 10px", borderRadius: 9,
+                          background: act ? act.couleur + "22" : "var(--tsa-sage-light)",
+                          borderLeft: `4px solid ${act ? act.couleur : "var(--tsa-border)"}` }}
+                          onClick={() => { if (dragging) handleDrop(i, creneau); }}
+                          onDoubleClick={() => act && handleClear(i, creneau)}>
+                          <span style={{ fontWeight: 700, color: "var(--tsa-muted)", minWidth: 44, fontSize: "0.8rem" }}>{creneau}</span>
+                          {act ? (
+                            <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>{act.emoji} {act.nom}</span>
+                          ) : (
+                            <span style={{ color: "var(--tsa-muted)", fontSize: "0.8rem" }}>{dragging ? "Toucher pour placer" : "—"}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+           </>
           ) : (
             <div style={{ padding: 16 }}>
               <h3 style={{ marginBottom: 16, color: "var(--tsa-text)" }}>Planning de {state.eleves[eleveSelect]}</h3>

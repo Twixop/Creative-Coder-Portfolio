@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTsa, Humeur, todayStr } from "../TsaContext";
+import { useTsa, Humeur, todayStr, speak, speechSupported } from "../TsaContext";
 
 const HUMEURS: Humeur[] = ["😊", "😐", "😟", "😡", "😴"];
 const HUMEUR_LABELS: Record<Humeur, string> = {
@@ -51,6 +51,13 @@ export default function TabHumeur() {
                   display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem"
                 }}>👤</div>
                 <span style={{ fontWeight: 800, fontSize: "0.9rem" }}>{nom}</span>
+                {speechSupported() && !absent && (
+                  <button className="tsa-speak-btn" title="Lire à voix haute" style={{ marginLeft: "auto" }}
+                    onClick={() => {
+                      const h = selected[i] ?? pastEntry?.humeur;
+                      speak(`${nom}. ${h ? HUMEUR_LABELS[h] : "Comment te sens-tu aujourd'hui ?"}`);
+                    }}>🔊</button>
+                )}
                 {absent && <span className="tsa-badge" style={{ background: "#fed7d7", color: "#c53030", marginLeft: "auto" }}>Absent</span>}
               </div>
               {!absent && (

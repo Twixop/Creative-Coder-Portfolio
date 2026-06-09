@@ -265,7 +265,12 @@
 .tsa-fullscreen { position: fixed; inset: 0; background: var(--tsa-cream); z-index: 500; overflow-y: auto; }
 
 /* Responsive */
+.planning-mobile-only { display: none; }
+
 @media (max-width: 768px) {
+  .planning-desktop-only { display: none; }
+  .planning-mobile-only { display: flex; }
+  .planning-table-wrap { overflow-x: visible; box-shadow: none; background: transparent; }
   .tsa-header { height: auto; min-height: 54px; padding: 8px 12px; flex-wrap: wrap; gap: 8px; }
   .tsa-logo { font-size: 1.05rem; gap: 6px; }
   .tsa-logo span { display: none; }
@@ -286,3 +291,52 @@
   .tsa-content { padding: 0 !important; }
   .tsa-root { background: white !important; }
 }
+
+/* ── Accessibilité ── */
+.tsa-root.tsa-large-text { font-size: 1.18rem; }
+.tsa-root.tsa-large-text .tsa-section-title { font-size: 1.25rem; }
+.tsa-root.tsa-large-text .tsa-btn { font-size: 0.95rem; }
+.tsa-root.tsa-large-text .tsa-input { font-size: 1.05rem; }
+
+.tsa-root.tsa-high-contrast {
+  --tsa-text: #000000;
+  --tsa-muted: #2b2b2b;
+  --tsa-cream: #ffffff;
+  --tsa-warm: #ffffff;
+  --tsa-border: #1a1a1a;
+  --tsa-sage: #0c5b2e;
+  --tsa-sage-light: #e9f7ee;
+  --tsa-sky: #0b4f6c;
+  --tsa-shadow: 0 0 0 2px #000;
+}
+.tsa-root.tsa-high-contrast .tsa-card { border: 2px solid #1a1a1a; }
+.tsa-root.tsa-high-contrast .tsa-tab.active { outline: 2px solid #0c5b2e; }
+
+.tsa-root.tsa-reduce-motion *,
+.tsa-root.tsa-reduce-motion *::before,
+.tsa-root.tsa-reduce-motion *::after {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Indicateur de modifications non sauvegardées */
+.tsa-unsaved-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #f6ad55;
+  animation: tsa-pulse 1.6s ease-in-out infinite;
+}
+@keyframes tsa-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* Bouton lecture vocale */
+.tsa-speak-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 2px 4px;
+  border-radius: 6px;
+  line-height: 1;
+}
+.tsa-speak-btn:hover { background: var(--tsa-sage-light); }

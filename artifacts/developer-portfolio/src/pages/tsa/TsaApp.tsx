@@ -1,10 +1,13 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { TsaProvider, useTsa } from "./TsaContext";
+import { setupPwa } from "./pwa";
 import "./tsa.css";
 import TabTableauBord from "./tabs/TabTableauBord";
 import TabHumeur from "./tabs/TabHumeur";
 import TabPlanning from "./tabs/TabPlanning";
 import TabEleves from "./tabs/TabEleves";
+import TabComportements from "./tabs/TabComportements";
+import TabRoutine from "./tabs/TabRoutine";
 import { TabEnseignante, TabAESH } from "./tabs/TabPersonnel";
 import TabCalendrier from "./tabs/TabCalendrier";
 import TabProjetAnnuel from "./tabs/TabProjetAnnuel";
@@ -17,7 +20,9 @@ const TABS = [
   { id: "tableau-bord", label: "📊 Tableau de Bord", component: TabTableauBord },
   { id: "humeur", label: "😊 Humeur du Jour", component: TabHumeur },
   { id: "planning", label: "📅 Planning Journalier", component: TabPlanning },
+  { id: "routine", label: "▶️ Routine & Minuteur", component: TabRoutine },
   { id: "eleves", label: "🧒 Fiches Élèves", component: TabEleves },
+  { id: "comportements", label: "📋 Comportements", component: TabComportements },
   { id: "enseignante", label: "👩‍🏫 Enseignante", component: TabEnseignante },
   { id: "aesh", label: "🤝 Personnel d'accompagnement", component: TabAESH },
   { id: "calendrier", label: "🗓️ Calendrier", component: TabCalendrier },
@@ -88,17 +93,37 @@ function SyncBar() {
   const [recordId, setRecordId] = useState<string | undefined>(undefined);
   const [lastSync, setLastSync] = useState<string | null>(null);
 
+  const serialized = JSON.stringify(state);
+  const lastSavedRef = useRef<string | null>(null);
+  const [armed, setArmed] = useState(false);
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
+  // Arming: on attend que le chargement initial (localStorage) soit passé
+  // avant de considérer les changements comme "non sauvegardés".
+  useEffect(() => {
+    const t = setTimeout(() => {
+      lastSavedRef.current = JSON.stringify(stateRef.current);
+      setArmed(true);
+    }, 1600);
+    return () => clearTimeout(t);
+  }, []);
+
+  const dirty = armed && lastSavedRef.current !== null && lastSavedRef.current !== serialized;
+
   const save = useCallback(async () => {
     setStatus("saving");
+    const snapshot = JSON.stringify(stateRef.current);
     try {
       const res = await fetch(`${API_BASE}/tsa/state`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ state, recordId }),
+        body: JSON.stringify({ state: stateRef.current, recordId }),
       });
       const data = await res.json() as { ok?: boolean; recordId?: string; error?: string };
       if (!res.ok || !data.ok) throw new Error(data.error ?? "Erreur");
       setRecordId(data.recordId);
+      lastSavedRef.current = snapshot;
       setLastSync(new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }));
       setStatus("ok");
       setTimeout(() => setStatus("idle"), 3000);
@@ -106,7 +131,7 @@ function SyncBar() {
       setStatus("error");
       setTimeout(() => setStatus("idle"), 4000);
     }
-  }, [state, recordId]);
+  }, [recordId]);
 
   const load = useCallback(async () => {
     setStatus("loading");
@@ -116,6 +141,7 @@ function SyncBar() {
       if (!res.ok || !data.state) throw new Error(data.error ?? "Aucune donnée");
       dispatch({ type: "LOAD", state: data.state as Parameters<typeof dispatch>[0] extends { state: infer S } ? S : never });
       if (data.recordId) setRecordId(data.recordId);
+      lastSavedRef.current = JSON.stringify(data.state);
       setLastSync(new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }));
       setStatus("ok");
       setTimeout(() => setStatus("idle"), 3000);
@@ -125,13 +151,28 @@ function SyncBar() {
     }
   }, [dispatch]);
 
+  // Auto-save (debounce) quand activé dans les paramètres.
+  useEffect(() => {
+    if (!state.settings.autoSave || !dirty || status !== "idle") return;
+    const t = setTimeout(() => { void save(); }, 3500);
+    return () => clearTimeout(t);
+  }, [serialized, dirty, state.settings.autoSave, status, save]);
+
   const label = status === "saving" ? "⏳ Sauvegarde…" : status === "loading" ? "⏳ Chargement…" : status === "ok" ? "✓ Synchronisé" : status === "error" ? "✗ Erreur" : "☁️ Airtable";
   const color = status === "ok" ? "#22c55e" : status === "error" ? "#e53e3e" : "var(--tsa-sage)";
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-      {lastSync && status === "idle" && (
-        <span style={{ fontSize: "0.72rem", color: "var(--tsa-muted)" }}>dernière synchro {lastSync}</span>
+      {dirty && status === "idle" && (
+        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: "0.72rem", color: "#c05621", fontWeight: 700 }}
+          title="Des modifications ne sont pas encore enregistrées sur Airtable">
+          <span className="tsa-unsaved-dot" /> non sauvegardé
+        </span>
+      )}
+      {!dirty && lastSync && status === "idle" && (
+        <span style={{ fontSize: "0.72rem", color: "var(--tsa-muted)" }}>
+          {state.settings.autoSave ? "auto · " : ""}synchro {lastSync}
+        </span>
       )}
       <span style={{ fontSize: "0.78rem", color, fontWeight: 700, minWidth: 90 }}>{label}</span>
       <button className="tsa-btn tsa-btn-sm tsa-btn-secondary" disabled={status !== "idle"} onClick={save} title="Sauvegarder vers Airtable">
@@ -144,12 +185,53 @@ function SyncBar() {
   );
 }
 
-function TsaInner() {
-  const [activeTab, setActiveTab] = useState("tableau-bord");
-  const ActiveComponent = TABS.find(t => t.id === activeTab)?.component ?? TabTableauBord;
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+};
+
+function InstallButton() {
+  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferred(e as BeforeInstallPromptEvent);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  if (!deferred) return null;
 
   return (
-    <div className="tsa-root">
+    <button className="tsa-btn tsa-btn-sm tsa-btn-secondary"
+      title="Installer l'application sur cet appareil"
+      onClick={async () => {
+        await deferred.prompt();
+        await deferred.userChoice;
+        setDeferred(null);
+      }}>
+      📲 Installer
+    </button>
+  );
+}
+
+function TsaInner() {
+  const [activeTab, setActiveTab] = useState("tableau-bord");
+  const { state } = useTsa();
+  const ActiveComponent = TABS.find(t => t.id === activeTab)?.component ?? TabTableauBord;
+
+  useEffect(() => { setupPwa(); }, []);
+
+  const a11yClass = [
+    state.settings.largeText ? "tsa-large-text" : "",
+    state.settings.highContrast ? "tsa-high-contrast" : "",
+    state.settings.reduceMotion ? "tsa-reduce-motion" : "",
+  ].filter(Boolean).join(" ");
+
+  return (
+    <div className={`tsa-root ${a11yClass}`.trim()}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');.tsa-root{font-family:'Nunito',sans-serif}`}</style>
 
       <header className="tsa-header">
@@ -159,6 +241,7 @@ function TsaInner() {
         </div>
         <div className="tsa-header-actions">
           <SyncBar />
+          <InstallButton />
           <button
             className={`tsa-btn tsa-btn-sm ${activeTab === "remplacement" ? "tsa-btn-secondary" : "tsa-btn-ghost"}`}
             onClick={() => setActiveTab("remplacement")}>

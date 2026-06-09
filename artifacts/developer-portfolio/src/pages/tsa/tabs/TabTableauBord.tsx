@@ -1,8 +1,16 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { useTsa, todayStr, CRENEAUX } from "../TsaContext";
 import type { TsaState } from "../TsaContext";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { jsPDF } from "jspdf";
+
+const HUMEUR_SCORE: Record<string, number> = { "😊": 5, "😐": 3, "😟": 2, "😡": 1, "😴": 3 };
+
+function dateNDaysAgo(n: number) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString().split("T")[0];
+}
 
 function generatePDF(state: TsaState, today: string) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
@@ -106,6 +114,47 @@ function generatePDF(state: TsaState, today: string) {
 export default function TabTableauBord() {
   const { state, dispatch } = useTsa();
   const today = todayStr();
+  const [moodPeriod, setMoodPeriod] = useState<7 | 30>(7);
+
+  // Évolution humeur moyenne de la classe
+  const moodTrend = useMemo(() => {
+    const days: { date: string; label: string; score: number | null }[] = [];
+    for (let i = moodPeriod - 1; i >= 0; i--) {
+      const date = dateNDaysAgo(i);
+      let sum = 0, n = 0;
+      state.eleves.forEach((_, idx) => {
+        const h = (state.humeurs[idx] ?? []).find(hh => hh.date === date);
+        if (h && HUMEUR_SCORE[h.humeur] != null) { sum += HUMEUR_SCORE[h.humeur]; n++; }
+      });
+      days.push({ date, label: date.slice(5), score: n > 0 ? Math.round((sum / n) * 10) / 10 : null });
+    }
+    return days;
+  }, [state.humeurs, state.eleves, moodPeriod]);
+  const moodHasData = moodTrend.some(d => d.score != null);
+
+  // Alerte : absences répétées (≥3 sur 14 jours)
+  const absencesRepetees = useMemo(() => {
+    const limite = dateNDaysAgo(14);
+    return state.eleves
+      .map((nom, i) => ({ nom, count: (state.absences[i] ?? []).filter(a => a.date >= limite).length }))
+      .filter(x => x.count >= 3);
+  }, [state.absences, state.eleves]);
+
+  // Alerte : objectifs non revus depuis >21 jours
+  const objectifsNonRevus = useMemo(() => {
+    const limite = dateNDaysAgo(21);
+    const res: { nom: string; objectif: string }[] = [];
+    state.eleves.forEach((nom, i) => {
+      const profil = state.profils[i];
+      (profil?.objectifs ?? []).forEach(o => {
+        if ((o.statut ?? "") === "acquis") return;
+        const histo = o.historique ?? [];
+        const last = histo.length ? histo[histo.length - 1].date : "";
+        if (last < limite) res.push({ nom, objectif: o.titre });
+      });
+    });
+    return res;
+  }, [state.profils, state.eleves]);
 
   const absentsAujourdhui = state.eleves.map((_, i) =>
     (state.absences[i] ?? []).some(a => a.date === today)
@@ -231,6 +280,33 @@ export default function TabTableauBord() {
               ))}
             </div>
           )}
+          {absencesRepetees.length > 0 && (
+            <div className="tsa-card" style={{ marginBottom: 16, borderLeft: "4px solid #e53e3e" }}>
+              <div className="tsa-section-title" style={{ fontSize: "0.95rem", color: "#c53030" }}>
+                🚨 Absences répétées (14 derniers jours)
+              </div>
+              {absencesRepetees.map(a => (
+                <div key={a.nom} style={{ fontSize: "0.83rem", marginBottom: 3 }}>
+                  <b>{a.nom}</b> — {a.count} absences
+                </div>
+              ))}
+            </div>
+          )}
+          {objectifsNonRevus.length > 0 && (
+            <div className="tsa-card" style={{ marginBottom: 16, borderLeft: "4px solid #3182ce" }}>
+              <div className="tsa-section-title" style={{ fontSize: "0.95rem", color: "#2b6cb0" }}>
+                🎯 Objectifs non revus (+ de 21 jours)
+              </div>
+              {objectifsNonRevus.slice(0, 6).map((o, i) => (
+                <div key={i} style={{ fontSize: "0.83rem", marginBottom: 3 }}>
+                  <b>{o.nom}</b> — {o.objectif}
+                </div>
+              ))}
+              {objectifsNonRevus.length > 6 && (
+                <div style={{ fontSize: "0.78rem", color: "var(--tsa-muted)" }}>+ {objectifsNonRevus.length - 6} autre(s)…</div>
+              )}
+            </div>
+          )}
           <div className="tsa-card">
             <div className="tsa-section-title" style={{ fontSize: "0.95rem" }}>📅 Prochains événements</div>
             {prochains.length === 0
@@ -243,6 +319,39 @@ export default function TabTableauBord() {
               ))
             }
           </div>
+        </div>
+      </div>
+
+      {/* Évolution humeur de la classe */}
+      <div className="tsa-card" style={{ marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+          <div className="tsa-section-title" style={{ fontSize: "0.95rem", margin: 0 }}>📈 Évolution de l'humeur de la classe</div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {([7, 30] as const).map(p => (
+              <button key={p} className="tsa-btn tsa-btn-sm"
+                style={{ background: moodPeriod === p ? "var(--tsa-sage)" : "var(--tsa-border)",
+                  color: moodPeriod === p ? "white" : "var(--tsa-muted)" }}
+                onClick={() => setMoodPeriod(p)}>{p === 7 ? "7 jours" : "30 jours"}</button>
+            ))}
+          </div>
+        </div>
+        {moodHasData ? (
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={moodTrend} margin={{ top: 10, right: 16, left: -16, bottom: 0 }}>
+              <XAxis dataKey="label" tick={{ fontSize: 10 }} interval={moodPeriod === 30 ? 4 : 0} />
+              <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 10 }} />
+              <Tooltip formatter={(v: number) => [`${v} / 5`, "Humeur moyenne"]} />
+              <Line type="monotone" dataKey="score" stroke="#7cad8c" strokeWidth={2.5}
+                dot={{ r: 3 }} connectNulls />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <p style={{ color: "var(--tsa-muted)", fontSize: "0.85rem" }}>
+            Pas encore de données d'humeur sur cette période. Saisis des humeurs dans l'onglet « Humeur du Jour ».
+          </p>
+        )}
+        <div style={{ fontSize: "0.72rem", color: "var(--tsa-muted)", marginTop: 4 }}>
+          Échelle : 😡 1 · 😟 2 · 😐/😴 3 · 😊 5
         </div>
       </div>
 

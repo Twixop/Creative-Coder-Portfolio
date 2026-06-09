@@ -23,11 +23,14 @@ export type NiveauComm = "verbal" | "semi-verbal" | "non-verbal";
 export type Tolerance = "faible" | "moyenne" | "haute";
 export type Humeur = "😊" | "😐" | "😟" | "😡" | "😴";
 
+export type ObjectifStatut = "non-acquis" | "en-cours" | "acquis";
+
 export type Objectif = {
   id: string;
   titre: string;
   description: string;
   progression: number;
+  statut?: ObjectifStatut;
   historique: { date: string; progression: number }[];
 };
 
@@ -39,10 +42,24 @@ export type ProfilEleve = {
   notes: string;
   objectifs: Objectif[];
   anniversaire: string;
+  avatar?: string;
+  photo?: string;
 };
 
 export type HumeurEntry = { date: string; humeur: Humeur; note: string };
 export type AbsenceEntry = { date: string };
+
+export type ComportementType = "positif" | "difficile";
+export type Comportement = {
+  id: string;
+  date: string;
+  heure: string;
+  type: ComportementType;
+  intensite: 1 | 2 | 3;
+  declencheur: string;
+  comportement: string;
+  apaisement: string;
+};
 
 export type Evenement = {
   id: string;
@@ -73,17 +90,33 @@ export type CarnetEntry = {
 
 export type DayPlanning = Record<string, Record<string, Activite | null>>;
 
+export type AppSettings = {
+  largeText: boolean;
+  highContrast: boolean;
+  reduceMotion: boolean;
+  autoSave: boolean;
+};
+
+export const defaultSettings: AppSettings = {
+  largeText: false,
+  highContrast: false,
+  reduceMotion: false,
+  autoSave: false,
+};
+
 export type TsaState = {
   eleves: string[];
   activites: Activite[];
   profils: Record<number, ProfilEleve>;
   humeurs: Record<number, HumeurEntry[]>;
   absences: Record<number, AbsenceEntry[]>;
+  comportements: Record<number, Comportement[]>;
   plannings: Record<string, DayPlanning>;
   evenements: Evenement[];
   jalons: Jalon[];
   projetsAnnuels: ProjetAnnuel[];
   carnets: Record<number, CarnetEntry[]>;
+  settings: AppSettings;
 };
 
 type Action =
@@ -94,6 +127,8 @@ type Action =
   | { type: "SET_PROFIL"; index: number; profil: Partial<ProfilEleve> }
   | { type: "ADD_HUMEUR"; index: number; entry: HumeurEntry }
   | { type: "SET_ABSENCE"; index: number; date: string; absent: boolean }
+  | { type: "ADD_COMPORTEMENT"; index: number; entry: Comportement }
+  | { type: "DELETE_COMPORTEMENT"; index: number; id: string }
   | { type: "SET_PLANNING_CELL"; date: string; eleve: number; creneau: string; activite: Activite | null }
   | { type: "RESET_PLANNING"; date: string }
   | { type: "ADD_EVENEMENT"; ev: Evenement }
@@ -102,6 +137,7 @@ type Action =
   | { type: "ADD_PROJET"; projet: ProjetAnnuel }
   | { type: "UPDATE_PROJET"; projet: ProjetAnnuel }
   | { type: "SET_CARNET"; eleveIndex: number; semaine: string; entry: Partial<CarnetEntry> }
+  | { type: "SET_SETTINGS"; settings: Partial<AppSettings> }
   | { type: "LOAD"; state: TsaState };
 
 const defaultProfil = (): ProfilEleve => ({
@@ -120,6 +156,7 @@ const initialState: TsaState = {
   profils: {},
   humeurs: {},
   absences: {},
+  comportements: {},
   plannings: {},
   evenements: [],
   jalons: [
@@ -130,6 +167,7 @@ const initialState: TsaState = {
   ],
   projetsAnnuels: [],
   carnets: {},
+  settings: defaultSettings,
 };
 
 function migrateState(raw: unknown): TsaState {
@@ -140,7 +178,9 @@ function migrateState(raw: unknown): TsaState {
     delete s.planningJour;
     delete s.planningHebdo;
   }
-  return { ...initialState, ...s } as TsaState;
+  const merged = { ...initialState, ...s } as TsaState;
+  merged.settings = { ...defaultSettings, ...(s.settings as Partial<AppSettings> | undefined) };
+  return merged;
 }
 
 function reducer(state: TsaState, action: Action): TsaState {
@@ -167,6 +207,14 @@ function reducer(state: TsaState, action: Action): TsaState {
       const filtered = prev.filter(a => a.date !== action.date);
       const next = action.absent ? [...filtered, { date: action.date }] : filtered;
       return { ...state, absences: { ...state.absences, [action.index]: next } };
+    }
+    case "ADD_COMPORTEMENT": {
+      const prev = state.comportements[action.index] ?? [];
+      return { ...state, comportements: { ...state.comportements, [action.index]: [...prev, action.entry] } };
+    }
+    case "DELETE_COMPORTEMENT": {
+      const prev = state.comportements[action.index] ?? [];
+      return { ...state, comportements: { ...state.comportements, [action.index]: prev.filter(c => c.id !== action.id) } };
     }
     case "SET_PLANNING_CELL": {
       const datePlan = state.plannings[action.date] ?? {};
@@ -200,6 +248,7 @@ function reducer(state: TsaState, action: Action): TsaState {
         : [...prev, { ...base, ...action.entry }];
       return { ...state, carnets: { ...state.carnets, [action.eleveIndex]: updated } };
     }
+    case "SET_SETTINGS": return { ...state, settings: { ...state.settings, ...action.settings } };
     default: return state;
   }
 }
@@ -250,4 +299,19 @@ export function currentWeek() {
   const d = new Date();
   d.setDate(d.getDate() - d.getDay() + 1);
   return d.toISOString().split("T")[0];
+}
+
+export function speak(text: string) {
+  if (typeof window === "undefined" || !("speechSynthesis" in window) || !text.trim()) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "fr-FR";
+    u.rate = 0.95;
+    window.speechSynthesis.speak(u);
+  } catch { /* ignore */ }
+}
+
+export function speechSupported() {
+  return typeof window !== "undefined" && "speechSynthesis" in window;
 }

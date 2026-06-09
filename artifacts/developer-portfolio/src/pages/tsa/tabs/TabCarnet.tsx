@@ -1,5 +1,59 @@
 import React, { useState } from "react";
 import { useTsa, currentWeek } from "../TsaContext";
+import { jsPDF } from "jspdf";
+
+type CarnetData = { semaine: string; activites: string; positifs: string; atravailler: string; message: string };
+
+function generateCarnetPdf(eleve: string, carnet: CarnetData) {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const W = 210;
+  const margin = 18;
+  let y = 0;
+
+  doc.setFillColor(124, 173, 140);
+  doc.rect(0, 0, W, 34, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20);
+  doc.setFont("helvetica", "bold");
+  doc.text("Carnet de liaison", margin, 16);
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.text(`${eleve}  ·  Semaine du ${carnet.semaine}`, margin, 26);
+  y = 48;
+
+  const sections: { titre: string; texte: string }[] = [
+    { titre: "Activites de la semaine", texte: carnet.activites },
+    { titre: "Points positifs", texte: carnet.positifs },
+    { titre: "Points a travailler", texte: carnet.atravailler },
+    { titre: "Message aux familles", texte: carnet.message },
+  ];
+
+  doc.setTextColor(40, 40, 40);
+  sections.forEach(s => {
+    if (y > 250) { doc.addPage(); y = 24; }
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(60, 120, 80);
+    doc.text(s.titre, margin, y); y += 7;
+    doc.setFontSize(10.5);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(40, 40, 40);
+    const lines = doc.splitTextToSize(s.texte.trim() || "—", W - 2 * margin);
+    doc.text(lines, margin, y);
+    y += lines.length * 5.5 + 8;
+  });
+
+  if (y > 255) { doc.addPage(); y = 24; }
+  y += 6;
+  doc.setDrawColor(200, 200, 200);
+  doc.line(margin, y, W - margin, y); y += 8;
+  doc.setFontSize(9);
+  doc.setTextColor(120, 120, 120);
+  doc.text("Signature de l'enseignant(e) :", margin, y);
+  doc.text("Signature des parents :", W / 2 + 6, y);
+
+  doc.save(`carnet-${eleve.replace(/\s+/g, "-")}-${carnet.semaine}.pdf`);
+}
 
 export default function TabCarnet() {
   const { state, dispatch } = useTsa();
@@ -69,7 +123,7 @@ export default function TabCarnet() {
         </div>
       </div>
 
-      <button className="tsa-btn tsa-btn-secondary" onClick={() => window.print()}>
+      <button className="tsa-btn tsa-btn-secondary" onClick={() => generateCarnetPdf(state.eleves[eleveIdx], carnet)}>
         🖨️ Générer le carnet PDF
       </button>
 
