@@ -168,7 +168,7 @@ function checkRate(ip: string): boolean {
 }
 
 router.post("/chatbot-recruteur", async (req, res) => {
-  const ip = (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim() ?? req.socket.remoteAddress ?? "unknown";
+  const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
   if (!checkRate(ip)) {
     res.status(429).json({ error: "Trop de messages envoyés. Réessaie dans quelques minutes." });
     return;
