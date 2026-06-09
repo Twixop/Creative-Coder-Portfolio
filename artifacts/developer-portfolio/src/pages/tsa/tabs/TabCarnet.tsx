@@ -69,19 +69,23 @@ function downloadCarnetPdf(eleve: string, carnet: CarnetData) {
   buildCarnetDoc(eleve, carnet).save(carnetFilename(eleve, carnet.semaine));
 }
 
-function carnetPdfBase64(eleve: string, carnet: CarnetData): string {
-  const uri = buildCarnetDoc(eleve, carnet).output("datauristring");
-  return uri.split(",")[1] ?? "";
+function openMailClient(eleve: string, carnet: CarnetData, to: string) {
+  downloadCarnetPdf(eleve, carnet);
+  const sujet = `Carnet de liaison — ${eleve} — semaine du ${carnet.semaine}`;
+  const corps =
+    `Bonjour,\n\n` +
+    `Veuillez trouver ci-joint le carnet de liaison de ${eleve} pour la semaine du ${carnet.semaine}.\n` +
+    `(Le PDF vient d'être téléchargé sur votre ordinateur : pensez à le glisser en pièce jointe.)\n\n` +
+    (carnet.message.trim() ? `${carnet.message.trim()}\n\n` : "") +
+    `Bien cordialement,\nL'équipe pédagogique`;
+  const href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
+  window.location.href = href;
 }
-
-const API_BASE = import.meta.env.BASE_URL + "api";
 
 export default function TabCarnet() {
   const { state, dispatch } = useTsa();
   const [eleveIdx, setEleveIdx] = useState(0);
   const [semaine, setSemaine] = useState(currentWeek());
-  const [sending, setSending] = useState(false);
-  const [mailStatus, setMailStatus] = useState<{ ok: boolean; msg: string } | null>(null);
 
   const carnet = (state.carnets[eleveIdx] ?? []).find(c => c.semaine === semaine) ?? {
     semaine, activites: "", positifs: "", atravailler: "", message: ""
@@ -91,35 +95,6 @@ export default function TabCarnet() {
 
   function update(field: string, val: string) {
     dispatch({ type: "SET_CARNET", eleveIndex: eleveIdx, semaine, entry: { [field]: val } });
-  }
-
-  async function sendByEmail() {
-    const eleve = state.eleves[eleveIdx];
-    setSending(true);
-    setMailStatus(null);
-    try {
-      const res = await fetch(`${API_BASE}/tsa/send-carnet`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          to: emailParent,
-          eleve,
-          semaine,
-          message: carnet.message,
-          pdfBase64: carnetPdfBase64(eleve, carnet),
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok) {
-        setMailStatus({ ok: true, msg: `Carnet envoyé à ${emailParent}` });
-      } else {
-        setMailStatus({ ok: false, msg: data.error ?? "Échec de l'envoi" });
-      }
-    } catch {
-      setMailStatus({ ok: false, msg: "Erreur réseau lors de l'envoi" });
-    } finally {
-      setSending(false);
-    }
   }
 
   const historique = (state.carnets[eleveIdx] ?? [])
@@ -181,22 +156,16 @@ export default function TabCarnet() {
         <button className="tsa-btn tsa-btn-secondary" onClick={() => downloadCarnetPdf(state.eleves[eleveIdx], carnet)}>
           🖨️ Télécharger le carnet PDF
         </button>
-        <button className="tsa-btn tsa-btn-primary" disabled={!emailParent || sending} onClick={sendByEmail}
-          title={emailParent ? `Envoyer à ${emailParent}` : "Renseignez l'email des parents dans la fiche élève"}>
-          {sending ? "⏳ Envoi…" : "✉️ Envoyer aux parents par mail"}
+        <button className="tsa-btn tsa-btn-primary"
+          onClick={() => openMailClient(state.eleves[eleveIdx], carnet, emailParent)}
+          title={emailParent ? `Préparer un mail pour ${emailParent}` : "Ouvre votre messagerie (vous saisirez le destinataire)"}>
+          ✉️ Envoyer par ma messagerie
         </button>
       </div>
-      {!emailParent && (
-        <p style={{ color: "var(--tsa-muted)", fontSize: "0.78rem", margin: "8px 0 0" }}>
-          ℹ️ Ajoutez l'email des parents dans la fiche de l'élève pour activer l'envoi par mail.
-        </p>
-      )}
-      {mailStatus && (
-        <p style={{ fontSize: "0.85rem", fontWeight: 700, margin: "8px 0 0",
-          color: mailStatus.ok ? "var(--tsa-sage)" : "#e53e3e" }}>
-          {mailStatus.ok ? "✅ " : "⚠️ "}{mailStatus.msg}
-        </p>
-      )}
+      <p style={{ color: "var(--tsa-muted)", fontSize: "0.78rem", margin: "8px 0 0", maxWidth: 560 }}>
+        ℹ️ Ce bouton télécharge le PDF puis ouvre votre messagerie (Outlook, Gmail…) avec un message pré-rempli
+        {emailParent ? ` adressé à ${emailParent}` : ""}. Il vous suffit alors de glisser le PDF téléchargé en pièce jointe.
+      </p>
 
       {historique.length > 0 && (
         <div className="tsa-card" style={{ marginTop: 24 }}>
