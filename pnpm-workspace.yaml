@@ -157,3 +157,26 @@ overrides:
   # drizzle-kit uses esbuild internally on an older version that's vulnerable, this overrides it
   "@esbuild-kit/esm-loader": "npm:tsx@^4.21.0"
   esbuild: "0.27.3"
+  # ============================================================================
+  # SECURITY: Transitive dependency vulnerability fixes
+  # ============================================================================
+  # picomatch ReDoS via extglob quantifiers (GHSA-c2c7-rcm5-vvqj)
+  # picomatch method injection in POSIX classes (GHSA-3v7f-55p6-f55p)
+  "picomatch@2": "2.3.2"
+  "picomatch@4": "4.0.4"
+  # path-to-regexp DoS via sequential optional groups (GHSA-j3q9-mxjg-w52f)
+  # path-to-regexp ReDoS via multiple wildcards (GHSA-27v5-c462-wpq7)
+  "path-to-regexp": "8.4.2"
+  # fast-uri path traversal (GHSA-q3j6-qgpj-74h6) and host confusion (GHSA-v39h-62p7-jpjc)
+  "fast-uri": "3.1.2"
+  # lodash code injection via template (GHSA-r5fr-rjxr-66jc)
+  # lodash prototype pollution via _.unset/_.omit (GHSA-f23m-r3pf-42rh)
+  "lodash": "4.18.1"
+  # yaml stack overflow via deeply nested YAML (GHSA-48c2-rrv3-qjmp)
+  "yaml": "2.9.0"
+  # brace-expansion ReDoS via zero-step sequence (GHSA-f886-m6hf-6m8v)
+  "brace-expansion@2": "2.1.1"
+  # qs DoS via qs.stringify null/undefined entries (GHSA-q8mj-m7cp-5q26)
+  "qs": "6.15.2"
+  # postcss XSS via unescaped </style> in stringify output (GHSA-qx2v-qp2m-jg93)
+  "postcss": "8.5.15"
