@@ -229,8 +229,12 @@
 .planning-cell { display: flex; align-items: center; justify-content: center; gap: 3px; border-radius: 6px; padding: 2px 4px; font-size: 0.75rem; }
 
 /* Activity item */
-.activite-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; cursor: grab; margin-bottom: 6px; font-size: 0.82rem; font-weight: 600; transition: transform 0.15s; }
+.activite-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; cursor: grab; margin-bottom: 6px; font-size: 0.82rem; font-weight: 600; transition: transform 0.15s, box-shadow 0.15s; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
 .activite-item:hover { transform: scale(1.02); }
+.activite-item.selected { box-shadow: 0 0 0 3px rgba(124,173,140,0.55); transform: scale(1.03); }
+
+/* Hint shown when an activity is selected (touch placement) */
+.planning-hint { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: var(--tsa-sage-light); color: var(--tsa-sage); border: 1px dashed var(--tsa-sage); border-radius: var(--tsa-radius-sm); padding: 8px 12px; font-size: 0.82rem; font-weight: 700; margin-bottom: 12px; }
 
 /* Eleve cards */
 .eleve-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
@@ -262,10 +266,17 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .tsa-header { height: auto; min-height: 54px; padding: 8px 12px; flex-wrap: wrap; gap: 8px; }
+  .tsa-logo { font-size: 1.05rem; gap: 6px; }
+  .tsa-logo span { display: none; }
+  .tsa-header-actions { width: 100%; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+  .tsa-btn-sm { padding: 5px 10px; font-size: 0.72rem; }
   .tsa-tabs { padding: 8px 12px 0; }
   .tsa-content { padding: 12px; }
   .planning-layout { grid-template-columns: 1fr; }
+  .planning-sidebar { max-height: none; }
   .tsa-grid-2, .tsa-grid-3 { grid-template-columns: 1fr; }
+  .tsa-section-title { font-size: 1rem; }
 }
 
 /* Print — masque l'en-tête navigateur et les éléments de navigation */

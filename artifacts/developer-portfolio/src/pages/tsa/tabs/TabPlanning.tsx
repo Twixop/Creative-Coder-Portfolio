@@ -89,15 +89,23 @@ export default function TabPlanning() {
         </div>
       )}
 
+      {dragging && (
+        <div className="planning-hint">
+          <span>👉 Activité sélectionnée : {dragging.emoji} {dragging.nom} — touchez une case pour la placer.</span>
+          <button className="tsa-btn tsa-btn-sm tsa-btn-ghost" onClick={() => setDragging(null)}>Annuler</button>
+        </div>
+      )}
+
       <div className="planning-layout">
         {/* Sidebar bibliothèque */}
         <div className="planning-sidebar">
           <div style={{ fontWeight: 800, fontSize: "0.85rem", marginBottom: 12, color: "var(--tsa-muted)" }}>📚 BIBLIOTHÈQUE</div>
           {state.activites.map(act => (
-            <div key={act.id} className="activite-item"
+            <div key={act.id} className={`activite-item${dragging?.id === act.id ? " selected" : ""}`}
               draggable
               onDragStart={() => setDragging(act)}
               onDragEnd={() => setDragging(null)}
+              onClick={() => setDragging(prev => (prev?.id === act.id ? null : act))}
               style={{ background: act.couleur + "22", borderLeft: `3px solid ${act.couleur}` }}>
               <span>{act.emoji}</span>
               <span style={{ color: act.couleur, fontWeight: 700 }}>{act.nom}</span>
@@ -129,6 +137,7 @@ export default function TabPlanning() {
                           style={{ background: absent ? "#f0f0f0" : undefined }}
                           onDragOver={e => { if (!absent) e.preventDefault(); }}
                           onDrop={() => !absent && handleDrop(i, creneau)}
+                          onClick={() => { if (!absent && dragging) handleDrop(i, creneau); }}
                           onDoubleClick={() => !absent && act && handleClear(i, creneau)}
                           title={act ? `${act.nom} (double-clic pour effacer)` : absent ? "Absent" : "Déposer une activité"}>
                           {act && !absent && (
@@ -153,9 +162,10 @@ export default function TabPlanning() {
                   <div key={creneau} style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 6,
                     padding: "8px 12px", borderRadius: 10,
                     background: act ? act.couleur + "22" : "var(--tsa-sage-light)",
-                    borderLeft: `4px solid ${act ? act.couleur : "var(--tsa-border)"}` }}
+                    borderLeft: `4px solid ${act ? act.couleur : "var(--tsa-border)"}`, cursor: "pointer" }}
                     onDragOver={e => e.preventDefault()}
                     onDrop={() => handleDrop(eleveSelect, creneau)}
+                    onClick={() => { if (dragging) handleDrop(eleveSelect, creneau); }}
                     onDoubleClick={() => act && handleClear(eleveSelect, creneau)}>
                     <span style={{ fontWeight: 700, color: "var(--tsa-muted)", minWidth: 45, fontSize: "0.85rem" }}>{creneau}</span>
                     {act ? (
