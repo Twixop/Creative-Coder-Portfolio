@@ -28,9 +28,11 @@ function generateCarnetPdf(eleve: string, carnet: CarnetData) {
     { titre: "Message aux familles", texte: carnet.message },
   ];
 
+  const PAGE_BOTTOM = 282;
+  const LINE_H = 5.5;
   doc.setTextColor(40, 40, 40);
   sections.forEach(s => {
-    if (y > 250) { doc.addPage(); y = 24; }
+    if (y > PAGE_BOTTOM - 14) { doc.addPage(); y = 24; }
     doc.setFontSize(13);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(60, 120, 80);
@@ -39,11 +41,15 @@ function generateCarnetPdf(eleve: string, carnet: CarnetData) {
     doc.setFont("helvetica", "normal");
     doc.setTextColor(40, 40, 40);
     const lines = doc.splitTextToSize(s.texte.trim() || "—", W - 2 * margin);
-    doc.text(lines, margin, y);
-    y += lines.length * 5.5 + 8;
+    for (const line of lines) {
+      if (y > PAGE_BOTTOM) { doc.addPage(); y = 24; }
+      doc.text(line, margin, y);
+      y += LINE_H;
+    }
+    y += 8;
   });
 
-  if (y > 255) { doc.addPage(); y = 24; }
+  if (y > PAGE_BOTTOM - 20) { doc.addPage(); y = 24; }
   y += 6;
   doc.setDrawColor(200, 200, 200);
   doc.line(margin, y, W - margin, y); y += 8;

@@ -266,7 +266,11 @@ export function TsaProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("tsa_app_state", JSON.stringify(state));
+    try {
+      localStorage.setItem("tsa_app_state", JSON.stringify(state));
+    } catch {
+      /* quota dépassé (ex. trop de photos) — la sauvegarde Airtable reste la source fiable */
+    }
   }, [state]);
 
   return <TsaContext.Provider value={{ state, dispatch }}>{children}</TsaContext.Provider>;

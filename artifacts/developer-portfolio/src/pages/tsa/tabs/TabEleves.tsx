@@ -16,7 +16,7 @@ const STATUTS: ObjectifStatut[] = ["non-acquis", "en-cours", "acquis"];
 
 const AVATAR_EMOJIS = ["🧒", "👦", "👧", "🧑", "🐢", "🦊", "🐰", "🐱", "🐶", "🦄", "🌟", "🚀", "🌈", "🐬", "🦋", "🌻"];
 
-function resizeImageToDataUrl(file: File, max = 256): Promise<string> {
+function resizeImageToDataUrl(file: File, max = 200): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -104,7 +104,7 @@ function ProfilView({ eleveIndex, onBack }: { eleveIndex: number; onBack: () => 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
             <AvatarDisplay avatar={profil.avatar} photo={profil.photo} size={72} />
             <div style={{ display: "flex", gap: 4 }}>
-              <label className="tsa-btn tsa-btn-ghost tsa-btn-sm" style={{ cursor: "pointer", fontSize: "0.68rem" }} title="Importer une photo">
+              <label className="tsa-btn tsa-btn-ghost tsa-btn-sm" style={{ cursor: "pointer", fontSize: "0.68rem" }} title="Importer une photo" aria-label="Importer une photo">
                 📷
                 <input type="file" accept="image/*" style={{ display: "none" }}
                   onChange={async e => {
@@ -115,12 +115,14 @@ function ProfilView({ eleveIndex, onBack }: { eleveIndex: number; onBack: () => 
               </label>
               {(profil.photo || profil.avatar) && (
                 <button className="tsa-btn tsa-btn-ghost tsa-btn-sm" style={{ fontSize: "0.68rem" }}
-                  title="Réinitialiser" onClick={() => setProfil({ photo: undefined, avatar: undefined })}>↺</button>
+                  title="Réinitialiser l'avatar" aria-label="Réinitialiser l'avatar" onClick={() => setProfil({ photo: undefined, avatar: undefined })}>↺</button>
               )}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 3, maxWidth: 130, justifyContent: "center" }}>
               {AVATAR_EMOJIS.map(em => (
                 <button key={em} onClick={() => setProfil({ avatar: em, photo: undefined })}
+                  title={`Choisir l'avatar ${em}`} aria-label={`Choisir l'avatar ${em}`}
+                  aria-pressed={profil.avatar === em && !profil.photo}
                   style={{ border: "none", background: profil.avatar === em && !profil.photo ? "var(--tsa-sage-light)" : "transparent",
                     borderRadius: 6, cursor: "pointer", fontSize: "1.05rem", padding: "1px 3px", lineHeight: 1.1 }}>{em}</button>
               ))}

@@ -1,0 +1,1 @@
+- [TSA demo HMR quirk](tsa-demo.md) — non-component exports in TsaContext.tsx trigger benign Vite "Fast Refresh incompatible" warnings; not bugs, trust typecheck.
